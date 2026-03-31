@@ -21,7 +21,6 @@
     overflow-x: hidden;
   }
 
-  /* TKK Logo pill */
   .logo {
     height: 64px;
     margin-bottom: 24px;
@@ -66,6 +65,7 @@
     top: -14px;
     left: 50%;
     transform: translateX(-50%);
+    transform-origin: center bottom;
     width: 0;
     height: 0;
     border-left: 20px solid transparent;
@@ -73,6 +73,7 @@
     border-top: 40px solid #000;
     z-index: 10;
     filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+    transition: transform 0.08s ease-out;
   }
 
   .center-circle {
@@ -187,37 +188,31 @@
     to { opacity: 1; transform: translateY(0); }
   }
 
-  /* Winner announcement overlay */
+  /* ===== FULLSCREEN WINNER OVERLAY ===== */
   .winner-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    border-radius: 50%;
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    z-index: 20;
+    z-index: 60;
     pointer-events: none;
     opacity: 0;
   }
 
   .winner-overlay.active {
-    animation: overlayIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    animation: overlayFadeIn 0.4s ease forwards;
   }
 
   .winner-overlay.fade-out {
-    animation: overlayOut 0.5s ease forwards;
+    animation: overlayFadeOut 0.5s ease forwards;
   }
 
   .winner-overlay .overlay-bg {
     position: absolute;
     top: 0; left: 0; right: 0; bottom: 0;
-    border-radius: 50%;
     background: #00B800;
-    opacity: 0.95;
   }
 
   .winner-overlay.orange .overlay-bg {
@@ -226,54 +221,62 @@
 
   .winner-overlay .overlay-label {
     position: relative;
-    font-size: 14px;
+    font-size: 18px;
     font-weight: 900;
     text-transform: uppercase;
-    letter-spacing: 3px;
+    letter-spacing: 6px;
     color: #000;
-    opacity: 0.5;
-    margin-bottom: 8px;
+    opacity: 0.4;
+    margin-bottom: 16px;
+    animation: revealUp 0.5s 0.2s cubic-bezier(0.16, 1, 0.3, 1) both;
   }
 
   .winner-overlay .overlay-name {
     position: relative;
-    font-size: 56px;
+    font-size: 100px;
     font-weight: 900;
     text-transform: uppercase;
-    letter-spacing: -1px;
+    letter-spacing: -2px;
     color: #000;
     line-height: 1;
-    animation: namePopIn 0.5s 0.15s cubic-bezier(0.16, 1, 0.3, 1) both;
+    animation: nameBounceIn 0.7s 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) both;
   }
 
   .winner-overlay .overlay-sub {
     position: relative;
-    font-size: 16px;
+    font-size: 18px;
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 1px;
+    letter-spacing: 2px;
     color: #000;
-    opacity: 0.4;
-    margin-top: 12px;
-    animation: namePopIn 0.4s 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
+    opacity: 0.35;
+    margin-top: 20px;
+    animation: revealUp 0.4s 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
   }
 
-  @keyframes overlayIn {
-    0% { opacity: 0; transform: scale(0.5); }
-    100% { opacity: 1; transform: scale(1); }
+  @keyframes overlayFadeIn {
+    0% { opacity: 0; }
+    100% { opacity: 1; }
   }
 
-  @keyframes overlayOut {
-    0% { opacity: 1; transform: scale(1); }
-    100% { opacity: 0; transform: scale(1.1); }
+  @keyframes overlayFadeOut {
+    0% { opacity: 1; }
+    100% { opacity: 0; }
   }
 
-  @keyframes namePopIn {
-    0% { opacity: 0; transform: translateY(20px) scale(0.8); }
-    100% { opacity: 1; transform: translateY(0) scale(1); }
+  @keyframes nameBounceIn {
+    0% { opacity: 0; transform: scale(0.3) translateY(40px); }
+    60% { opacity: 1; transform: scale(1.08) translateY(-5px); }
+    80% { transform: scale(0.96) translateY(2px); }
+    100% { opacity: 1; transform: scale(1) translateY(0); }
   }
 
-  /* Finale overlay — full screen with both winners */
+  @keyframes revealUp {
+    0% { opacity: 0; transform: translateY(20px); }
+    100% { opacity: 0.4; transform: translateY(0); }
+  }
+
+  /* ===== FINALE OVERLAY ===== */
   .finale-overlay {
     position: fixed;
     top: 0; left: 0; right: 0; bottom: 0;
@@ -285,73 +288,98 @@
     z-index: 50;
     opacity: 0;
     pointer-events: none;
+    overflow: hidden;
   }
 
   .finale-overlay.active {
     opacity: 1;
     pointer-events: auto;
-    animation: finaleIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    animation: finaleIn 0.6s ease forwards;
   }
 
   .finale-overlay .finale-label {
-    font-size: 14px;
+    font-size: 16px;
     font-weight: 900;
     text-transform: uppercase;
-    letter-spacing: 4px;
+    letter-spacing: 6px;
     color: #fff;
-    opacity: 0.4;
-    margin-bottom: 24px;
-    animation: namePopIn 0.5s 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
+    opacity: 0;
+    margin-bottom: 40px;
+    animation: finaleFadeUp 0.6s 0.8s ease both;
   }
 
   .finale-overlay .finale-names {
     display: flex;
     align-items: center;
-    gap: 24px;
-    animation: namePopIn 0.6s 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+    gap: 32px;
   }
 
   .finale-overlay .finale-name {
-    font-size: 64px;
+    font-size: 72px;
     font-weight: 900;
     text-transform: uppercase;
     letter-spacing: -1px;
     line-height: 1;
-    padding: 12px 32px;
-    border-radius: 20px;
+    padding: 16px 40px;
+    border-radius: 24px;
+    opacity: 0;
   }
 
   .finale-overlay .finale-name:nth-child(1) {
     background: #00B800;
     color: #000;
+    animation: flyInLeft 0.8s 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
   }
 
   .finale-overlay .finale-amp {
-    font-size: 48px;
+    font-size: 56px;
     font-weight: 900;
     color: #fff;
-    opacity: 0.3;
+    opacity: 0;
+    animation: ampPop 0.5s 0.9s cubic-bezier(0.34, 1.56, 0.64, 1) both;
   }
 
   .finale-overlay .finale-name:nth-child(3) {
     background: #FC470F;
     color: #000;
+    animation: flyInRight 0.8s 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
   }
 
   .finale-overlay .finale-sub {
     font-size: 20px;
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 2px;
+    letter-spacing: 3px;
     color: #fff;
-    opacity: 0.3;
-    margin-top: 32px;
-    animation: namePopIn 0.5s 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+    opacity: 0;
+    margin-top: 40px;
+    animation: finaleFadeUp 0.6s 1.2s ease both;
   }
 
   @keyframes finaleIn {
     0% { opacity: 0; }
     100% { opacity: 1; }
+  }
+
+  @keyframes flyInLeft {
+    0% { opacity: 0; transform: translateX(-120vw) rotate(-8deg); }
+    100% { opacity: 1; transform: translateX(0) rotate(0deg); }
+  }
+
+  @keyframes flyInRight {
+    0% { opacity: 0; transform: translateX(120vw) rotate(8deg); }
+    100% { opacity: 1; transform: translateX(0) rotate(0deg); }
+  }
+
+  @keyframes ampPop {
+    0% { opacity: 0; transform: scale(0); }
+    70% { transform: scale(1.3); }
+    100% { opacity: 0.35; transform: scale(1); }
+  }
+
+  @keyframes finaleFadeUp {
+    0% { opacity: 0; transform: translateY(20px); }
+    100% { opacity: 0.35; transform: translateY(0); }
   }
 
   .confetti-canvas {
@@ -372,7 +400,7 @@
 <div class="subtitle">2 winnaars  /  1 lunch</div>
 
 <div class="wheel-container">
-  <div class="pointer"></div>
+  <div class="pointer" id="pointer"></div>
   <canvas id="wheel" width="1080" height="1080"></canvas>
   <div class="center-circle" id="centerLabel">Spin</div>
   <div class="winner-overlay" id="winnerOverlay">
@@ -426,7 +454,6 @@ const cy = H / 2;
 const radius = W / 2 - 20;
 const segAngle = (2 * Math.PI) / names.length;
 
-// TKK brand colors — exact website kleuren, afwisselend
 const brandColors = ['#00B800', '#FC470F', '#3391FF', '#E80094'];
 const palette = names.map((_, i) => brandColors[i % 4]);
 
@@ -434,7 +461,42 @@ let currentAngle = 0;
 let spinning = false;
 let winners = [];
 let eliminatedIndex = -1;
+let flashIndex = -1;
+let flashPhase = 0;
 
+// ===== AUDIO: tick sound via Web Audio API =====
+let audioCtx = null;
+function initAudio() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+}
+
+function playTick(volume = 0.3) {
+  if (!audioCtx) return;
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  osc.connect(gain);
+  gain.connect(audioCtx.destination);
+  osc.type = 'triangle';
+  osc.frequency.setValueAtTime(1800, audioCtx.currentTime);
+  osc.frequency.exponentialRampToValueAtTime(600, audioCtx.currentTime + 0.04);
+  gain.gain.setValueAtTime(volume, audioCtx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.06);
+  osc.start(audioCtx.currentTime);
+  osc.stop(audioCtx.currentTime + 0.06);
+}
+
+// ===== POINTER BOUNCE =====
+const pointer = document.getElementById('pointer');
+let pointerTimeout = null;
+function bouncePointer() {
+  pointer.style.transform = 'translateX(-50%) rotate(12deg)';
+  clearTimeout(pointerTimeout);
+  pointerTimeout = setTimeout(() => {
+    pointer.style.transform = 'translateX(-50%) rotate(0deg)';
+  }, 80);
+}
+
+// ===== DRAWING =====
 function drawWheel() {
   ctx.clearRect(0, 0, W, H);
 
@@ -442,6 +504,7 @@ function drawWheel() {
     const startAngle = currentAngle + i * segAngle;
     const endAngle = startAngle + segAngle;
     const isEliminated = i === eliminatedIndex;
+    const isFlashing = i === flashIndex;
 
     ctx.beginPath();
     ctx.moveTo(cx, cy);
@@ -450,12 +513,14 @@ function drawWheel() {
 
     if (isEliminated) {
       ctx.fillStyle = '#e0e0e0';
+    } else if (isFlashing) {
+      // Flash between white and original color
+      ctx.fillStyle = flashPhase % 2 === 0 ? '#fff' : palette[i];
     } else {
       ctx.fillStyle = palette[i];
     }
     ctx.fill();
 
-    // Segment borders
     ctx.beginPath();
     ctx.moveTo(cx, cy);
     ctx.arc(cx, cy, radius, startAngle, endAngle);
@@ -490,62 +555,119 @@ function getSelectedIndex() {
   return Math.floor(normalizedAngle / segAngle);
 }
 
+// ===== FLASH winning segment =====
+function flashWinner(idx, callback) {
+  flashIndex = idx;
+  let count = 0;
+  const totalFlashes = 8;
+
+  function doFlash() {
+    flashPhase = count;
+    drawWheel();
+    count++;
+    if (count <= totalFlashes) {
+      setTimeout(doFlash, 120 + count * 20); // slows down
+    } else {
+      flashIndex = -1;
+      drawWheel();
+      setTimeout(callback, 200);
+    }
+  }
+  doFlash();
+}
+
+// ===== SPIN with dramatic easing, ticks, pointer bounce =====
 function spin() {
   if (spinning) return;
+  initAudio();
   spinning = true;
   document.getElementById('spinBtn').disabled = true;
   document.getElementById('centerLabel').textContent = '...';
 
-  const extraRotations = (5 + Math.random() * 3) * 2 * Math.PI;
+  // More rotations for more drama (7-11 full rotations)
+  const extraRotations = (7 + Math.random() * 4) * 2 * Math.PI;
   const targetAngle = currentAngle + extraRotations;
   const startAngle = currentAngle;
-  const duration = 4000 + Math.random() * 1000;
+  // Longer duration for more suspense
+  const duration = 6000 + Math.random() * 2000;
   const startTime = performance.now();
+  let lastSegIndex = getSelectedIndex();
 
-  function easeOutCubic(t) {
-    return 1 - Math.pow(1 - t, 3);
+  // Dramatic easing: very slow at end with slight overshoot
+  function easeOutExpo(t) {
+    if (t >= 1) return 1;
+    return 1 - Math.pow(2, -12 * t);
+  }
+
+  // Overshoot function: goes slightly past then bounces back
+  function easeWithBounce(t) {
+    const base = easeOutExpo(t);
+    if (t > 0.92) {
+      // Bounce zone: overshoot then settle
+      const bounceT = (t - 0.92) / 0.08; // 0 to 1 in bounce zone
+      const bounce = Math.sin(bounceT * Math.PI * 2.5) * 0.003 * (1 - bounceT);
+      return base + bounce;
+    }
+    return base;
   }
 
   function animate(time) {
     const elapsed = time - startTime;
     const progress = Math.min(elapsed / duration, 1);
-    const eased = easeOutCubic(progress);
+    const eased = easeWithBounce(progress);
 
     currentAngle = startAngle + (targetAngle - startAngle) * eased;
     drawWheel();
 
+    // Tick detection: did we cross a segment boundary?
+    const currentSegIndex = getSelectedIndex();
+    if (currentSegIndex !== lastSegIndex) {
+      // Volume based on speed (louder when slower = more dramatic)
+      const speed = 1 - progress;
+      const vol = progress > 0.7 ? 0.5 : 0.15 + speed * 0.2;
+      playTick(vol);
+      bouncePointer();
+      lastSegIndex = currentSegIndex;
+    }
+
     if (progress < 1) {
       requestAnimationFrame(animate);
     } else {
+      // Spin complete — flash then reveal
       spinning = false;
       const selectedIdx = getSelectedIndex();
 
       if (winners.length === 0) {
-        winners.push(names[selectedIdx]);
-        eliminatedIndex = selectedIdx;
-        drawWheel();
+        // Flash the winning segment first
+        flashWinner(selectedIdx, () => {
+          winners.push(names[selectedIdx]);
+          eliminatedIndex = selectedIdx;
+          drawWheel();
 
-        document.getElementById('centerLabel').textContent = '1/2';
-        showWinnerOverlay(names[selectedIdx], () => {
-          showWinner(1, names[selectedIdx]);
-          document.getElementById('spinBtn').disabled = false;
-          document.getElementById('spinBtn').textContent = 'Draai voor winnaar 2';
-        }, null, 'Winnaar 1', 'Nog 1 te gaan');
+          document.getElementById('centerLabel').textContent = '1/2';
+          showWinnerOverlay(names[selectedIdx], () => {
+            showWinner(1, names[selectedIdx]);
+            document.getElementById('spinBtn').disabled = false;
+            document.getElementById('spinBtn').textContent = 'Draai voor winnaar 2';
+          }, null, 'Winnaar 1', 'Nog 1 te gaan');
+        });
       } else if (winners.length === 1) {
         let idx = selectedIdx;
         if (idx === eliminatedIndex) {
           idx = (idx + 1) % names.length;
         }
-        winners.push(names[idx]);
 
-        document.getElementById('centerLabel').textContent = '2/2';
-        showWinnerOverlay(names[idx], () => {
-          showWinner(2, names[idx]);
-          // Show finale after short pause
-          setTimeout(() => {
-            showFinale(winners[0], winners[1]);
-          }, 400);
-        }, 'orange', 'Winnaar 2', '');
+        flashWinner(idx, () => {
+          winners.push(names[idx]);
+
+          document.getElementById('centerLabel').textContent = '2/2';
+          showWinnerOverlay(names[idx], () => {
+            showWinner(2, names[idx]);
+            setTimeout(() => {
+              showFinale(winners[0], winners[1]);
+            }, 400);
+          }, 'orange', 'Winnaar 2', '');
+        });
       }
     }
   }
@@ -553,6 +675,7 @@ function spin() {
   requestAnimationFrame(animate);
 }
 
+// ===== FULLSCREEN WINNER OVERLAY =====
 function showWinnerOverlay(name, onDone, colorClass, labelText, subText) {
   const overlay = document.getElementById('winnerOverlay');
   const overlayName = document.getElementById('overlayName');
@@ -562,14 +685,22 @@ function showWinnerOverlay(name, onDone, colorClass, labelText, subText) {
   overlayName.textContent = name.toUpperCase();
   overlayLabel.textContent = labelText || 'Winnaar 1';
   overlaySub.textContent = subText !== undefined ? subText : 'Nog 1 te gaan';
+  overlaySub.style.display = subText === '' ? 'none' : 'block';
 
-  // Set color variant
+  // Force re-trigger animations by cloning inner elements
+  overlayLabel.style.animation = 'none';
+  overlayName.style.animation = 'none';
+  overlaySub.style.animation = 'none';
+  void overlayLabel.offsetHeight; // reflow
+  overlayLabel.style.animation = '';
+  overlayName.style.animation = '';
+  overlaySub.style.animation = '';
+
   overlay.classList.remove('orange', 'fade-out');
   if (colorClass) overlay.classList.add(colorClass);
   overlay.style.opacity = '';
   overlay.classList.add('active');
 
-  // Hold for 2.5s, then fade out
   setTimeout(() => {
     overlay.classList.remove('active');
     overlay.classList.add('fade-out');
@@ -579,13 +710,30 @@ function showWinnerOverlay(name, onDone, colorClass, labelText, subText) {
       overlay.style.opacity = '0';
       if (onDone) onDone();
     }, 500);
-  }, 2500);
+  }, 2800);
 }
 
+// ===== FINALE =====
 function showFinale(name1, name2) {
   const finale = document.getElementById('finaleOverlay');
-  document.getElementById('finaleName1').textContent = name1.toUpperCase();
-  document.getElementById('finaleName2').textContent = name2.toUpperCase();
+
+  // Reset animations by removing and re-adding class
+  finale.classList.remove('active');
+  const n1 = document.getElementById('finaleName1');
+  const n2 = document.getElementById('finaleName2');
+  const amp = document.querySelector('.finale-amp');
+  const label = document.querySelector('.finale-label');
+  const sub = document.querySelector('.finale-sub');
+
+  // Force animation restart
+  [n1, n2, amp, label, sub].forEach(el => {
+    el.style.animation = 'none';
+    void el.offsetHeight;
+    el.style.animation = '';
+  });
+
+  n1.textContent = name1.toUpperCase();
+  n2.textContent = name2.toUpperCase();
   finale.classList.add('active');
   launchConfetti();
 
@@ -620,11 +768,12 @@ function resetWheel() {
   document.getElementById('spinBtn').textContent = 'Draai het rad';
   document.getElementById('resetBtn').style.display = 'none';
   document.getElementById('centerLabel').textContent = 'Spin';
+  pointer.style.transform = 'translateX(-50%) rotate(0deg)';
 
   drawWheel();
 }
 
-// Confetti in TKK brand colors
+// ===== CONFETTI =====
 function launchConfetti() {
   const cCanvas = document.getElementById('confetti');
   cCanvas.width = window.innerWidth;
@@ -633,17 +782,17 @@ function launchConfetti() {
   const pieces = [];
   const colors = ['#00B800', '#FC470F', '#3391FF', '#E80094', '#000'];
 
-  for (let i = 0; i < 180; i++) {
+  for (let i = 0; i < 200; i++) {
     pieces.push({
       x: Math.random() * cCanvas.width,
       y: Math.random() * -cCanvas.height,
-      w: 8 + Math.random() * 10,
+      w: 8 + Math.random() * 12,
       h: 4 + Math.random() * 6,
       color: colors[Math.floor(Math.random() * colors.length)],
-      speed: 2.5 + Math.random() * 4,
+      speed: 2 + Math.random() * 5,
       angle: Math.random() * Math.PI * 2,
-      spin: (Math.random() - 0.5) * 0.15,
-      drift: (Math.random() - 0.5) * 1.5,
+      spin: (Math.random() - 0.5) * 0.2,
+      drift: (Math.random() - 0.5) * 2,
       opacity: 1
     });
   }
@@ -658,7 +807,7 @@ function launchConfetti() {
       p.y += p.speed;
       p.x += p.drift;
       p.angle += p.spin;
-      if (frame > 120) p.opacity -= 0.015;
+      if (frame > 140) p.opacity -= 0.012;
 
       if (p.opacity > 0 && p.y < cCanvas.height + 20) {
         alive = true;
