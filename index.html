@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lunch van de Maand — The Kind Kids</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: #ffffff;
+    color: #000;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 16px;
+    overflow-x: hidden;
+  }
+
+  /* TKK Logo pill */
+  .logo {
+    height: 64px;
+    margin-bottom: 24px;
+  }
+
+  h1 {
+    font-size: 52px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: -1px;
+    line-height: 1;
+    margin-bottom: 8px;
+    color: #000;
+    text-align: center;
+  }
+
+  .subtitle {
+    font-size: 16px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #000;
+    margin-bottom: 40px;
+    opacity: 0.5;
+  }
+
+  .wheel-container {
+    position: relative;
+    width: 540px;
+    height: 540px;
+    margin-bottom: 32px;
+  }
+
+  canvas#wheel {
+    width: 540px;
+    height: 540px;
+    filter: drop-shadow(0 12px 40px rgba(0, 0, 0, 0.12));
+  }
+
+  .pointer {
+    position: absolute;
+    top: -14px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 20px solid transparent;
+    border-right: 20px solid transparent;
+    border-top: 40px solid #000;
+    z-index: 10;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+  }
+
+  .center-circle {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 70px;
+    height: 70px;
+    background: #fff;
+    border: 3px solid #000;
+    border-radius: 50%;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 900;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #000;
+  }
+
+  .spin-btn {
+    background: #00B800;
+    color: #000;
+    border: none;
+    padding: 16px 56px;
+    font-family: 'Inter', sans-serif;
+    font-size: 18px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-radius: 100px;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-bottom: 16px;
+  }
+
+  .spin-btn:hover { background: #00a000; transform: scale(1.03); }
+  .spin-btn:active { transform: scale(0.97); }
+  .spin-btn:disabled { background: #ddd; color: #999; cursor: not-allowed; transform: none; }
+
+  .reset-btn {
+    background: #000;
+    color: #fff;
+    border: none;
+    padding: 12px 36px;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-radius: 100px;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-bottom: 32px;
+    display: none;
+  }
+
+  .reset-btn:hover { background: #333; }
+
+  .winners-panel {
+    background: #00B800;
+    border-radius: 24px;
+    padding: 32px 36px;
+    width: 100%;
+    max-width: 540px;
+    display: none;
+  }
+
+  .winners-panel h2 {
+    font-size: 28px;
+    font-weight: 900;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+    color: #000;
+  }
+
+  .winner-card {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 14px 20px;
+    background: rgba(0,0,0,0.08);
+    border-radius: 16px;
+    margin-bottom: 10px;
+    animation: slideIn 0.5s ease;
+  }
+
+  .winner-card:last-child { margin-bottom: 0; }
+
+  .winner-number {
+    font-size: 12px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #000;
+    opacity: 0.5;
+    min-width: 90px;
+  }
+
+  .winner-name {
+    font-size: 22px;
+    font-weight: 900;
+    text-transform: uppercase;
+    color: #000;
+  }
+
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Winner announcement overlay */
+  .winner-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 20;
+    pointer-events: none;
+    opacity: 0;
+  }
+
+  .winner-overlay.active {
+    animation: overlayIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  .winner-overlay.fade-out {
+    animation: overlayOut 0.5s ease forwards;
+  }
+
+  .winner-overlay .overlay-bg {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    border-radius: 50%;
+    background: #00B800;
+    opacity: 0.95;
+  }
+
+  .winner-overlay.orange .overlay-bg {
+    background: #FC470F;
+  }
+
+  .winner-overlay .overlay-label {
+    position: relative;
+    font-size: 14px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    color: #000;
+    opacity: 0.5;
+    margin-bottom: 8px;
+  }
+
+  .winner-overlay .overlay-name {
+    position: relative;
+    font-size: 56px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: -1px;
+    color: #000;
+    line-height: 1;
+    animation: namePopIn 0.5s 0.15s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  .winner-overlay .overlay-sub {
+    position: relative;
+    font-size: 16px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #000;
+    opacity: 0.4;
+    margin-top: 12px;
+    animation: namePopIn 0.4s 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  @keyframes overlayIn {
+    0% { opacity: 0; transform: scale(0.5); }
+    100% { opacity: 1; transform: scale(1); }
+  }
+
+  @keyframes overlayOut {
+    0% { opacity: 1; transform: scale(1); }
+    100% { opacity: 0; transform: scale(1.1); }
+  }
+
+  @keyframes namePopIn {
+    0% { opacity: 0; transform: translateY(20px) scale(0.8); }
+    100% { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  /* Finale overlay — full screen with both winners */
+  .finale-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: #000;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 50;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .finale-overlay.active {
+    opacity: 1;
+    pointer-events: auto;
+    animation: finaleIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  .finale-overlay .finale-label {
+    font-size: 14px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 4px;
+    color: #fff;
+    opacity: 0.4;
+    margin-bottom: 24px;
+    animation: namePopIn 0.5s 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  .finale-overlay .finale-names {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    animation: namePopIn 0.6s 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  .finale-overlay .finale-name {
+    font-size: 64px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: -1px;
+    line-height: 1;
+    padding: 12px 32px;
+    border-radius: 20px;
+  }
+
+  .finale-overlay .finale-name:nth-child(1) {
+    background: #00B800;
+    color: #000;
+  }
+
+  .finale-overlay .finale-amp {
+    font-size: 48px;
+    font-weight: 900;
+    color: #fff;
+    opacity: 0.3;
+  }
+
+  .finale-overlay .finale-name:nth-child(3) {
+    background: #FC470F;
+    color: #000;
+  }
+
+  .finale-overlay .finale-sub {
+    font-size: 20px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: #fff;
+    opacity: 0.3;
+    margin-top: 32px;
+    animation: namePopIn 0.5s 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  @keyframes finaleIn {
+    0% { opacity: 0; }
+    100% { opacity: 1; }
+  }
+
+  .confetti-canvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 100;
+  }
+</style>
+</head>
+<body>
+
+<img class="logo" src="https://www.thekindkids.be/frontend/img/site/logo.svg" alt="The Kind Kids" />
+<h1>Lunch van de Maand</h1>
+<div class="subtitle">2 winnaars  /  1 lunch</div>
+
+<div class="wheel-container">
+  <div class="pointer"></div>
+  <canvas id="wheel" width="1080" height="1080"></canvas>
+  <div class="center-circle" id="centerLabel">Spin</div>
+  <div class="winner-overlay" id="winnerOverlay">
+    <div class="overlay-bg"></div>
+    <div class="overlay-label">Winnaar 1</div>
+    <div class="overlay-name" id="overlayName"></div>
+    <div class="overlay-sub">Nog 1 te gaan</div>
+  </div>
+</div>
+
+<button class="spin-btn" id="spinBtn" onclick="spin()">Draai het rad</button>
+<button class="reset-btn" id="resetBtn" onclick="resetWheel()">Opnieuw</button>
+
+<div class="winners-panel" id="winnersPanel">
+  <h2>Winnaars</h2>
+  <div id="winnersList"></div>
+</div>
+
+<div class="finale-overlay" id="finaleOverlay">
+  <div class="finale-label">Lunch van de Maand</div>
+  <div class="finale-names">
+    <div class="finale-name" id="finaleName1"></div>
+    <div class="finale-amp">&</div>
+    <div class="finale-name" id="finaleName2"></div>
+  </div>
+  <div class="finale-sub">Geniet ervan</div>
+</div>
+
+<canvas class="confetti-canvas" id="confetti"></canvas>
+
+<script>
+const names = [
+  "Jan H.", "Leen", "Kristof", "Bram", "Tim",
+  "Annelies", "Eva V.", "Kim", "Stephanie", "Eva B.",
+  "Karel-Jan", "Hannah", "Anton L.", "Eline", "Lore D.",
+  "Laure", "Sarah O.", "Jill", "Merel", "Aurel",
+  "Sigrid", "Maridona", "Seppe", "Emily", "Ben",
+  "Joanna", "Ashley", "Laurie", "Sarah M.", "Maarten",
+  "Charlot", "Emma", "Nils", "Lukas", "David",
+  "Pieter Jelle", "Sten", "Daphne", "Anton A.", "Robin",
+  "Lore P.", "Rein", "Michael", "Jan B.", "Jonas",
+  "Cedric", "Lori"
+];
+
+const canvas = document.getElementById('wheel');
+const ctx = canvas.getContext('2d');
+const W = canvas.width;
+const H = canvas.height;
+const cx = W / 2;
+const cy = H / 2;
+const radius = W / 2 - 20;
+const segAngle = (2 * Math.PI) / names.length;
+
+// TKK brand colors — exact website kleuren, afwisselend
+const brandColors = ['#00B800', '#FC470F', '#3391FF', '#E80094'];
+const palette = names.map((_, i) => brandColors[i % 4]);
+
+let currentAngle = 0;
+let spinning = false;
+let winners = [];
+let eliminatedIndex = -1;
+
+function drawWheel() {
+  ctx.clearRect(0, 0, W, H);
+
+  for (let i = 0; i < names.length; i++) {
+    const startAngle = currentAngle + i * segAngle;
+    const endAngle = startAngle + segAngle;
+    const isEliminated = i === eliminatedIndex;
+
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.arc(cx, cy, radius, startAngle, endAngle);
+    ctx.closePath();
+
+    if (isEliminated) {
+      ctx.fillStyle = '#e0e0e0';
+    } else {
+      ctx.fillStyle = palette[i];
+    }
+    ctx.fill();
+
+    // Segment borders
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.arc(cx, cy, radius, startAngle, endAngle);
+    ctx.closePath();
+    ctx.strokeStyle = '#fff';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    // Name text
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate(startAngle + segAngle / 2);
+    ctx.textAlign = 'right';
+    ctx.fillStyle = isEliminated ? '#bbb' : '#000';
+    ctx.font = `900 ${isEliminated ? 16 : 19}px 'Inter', sans-serif`;
+    ctx.fillText(names[i].toUpperCase(), radius - 26, 6);
+    ctx.restore();
+  }
+
+  // Outer ring
+  ctx.beginPath();
+  ctx.arc(cx, cy, radius + 4, 0, 2 * Math.PI);
+  ctx.strokeStyle = '#000';
+  ctx.lineWidth = 6;
+  ctx.stroke();
+}
+
+function getSelectedIndex() {
+  const pointerAngle = -Math.PI / 2;
+  let normalizedAngle = (pointerAngle - currentAngle) % (2 * Math.PI);
+  if (normalizedAngle < 0) normalizedAngle += 2 * Math.PI;
+  return Math.floor(normalizedAngle / segAngle);
+}
+
+function spin() {
+  if (spinning) return;
+  spinning = true;
+  document.getElementById('spinBtn').disabled = true;
+  document.getElementById('centerLabel').textContent = '...';
+
+  const extraRotations = (5 + Math.random() * 3) * 2 * Math.PI;
+  const targetAngle = currentAngle + extraRotations;
+  const startAngle = currentAngle;
+  const duration = 4000 + Math.random() * 1000;
+  const startTime = performance.now();
+
+  function easeOutCubic(t) {
+    return 1 - Math.pow(1 - t, 3);
+  }
+
+  function animate(time) {
+    const elapsed = time - startTime;
+    const progress = Math.min(elapsed / duration, 1);
+    const eased = easeOutCubic(progress);
+
+    currentAngle = startAngle + (targetAngle - startAngle) * eased;
+    drawWheel();
+
+    if (progress < 1) {
+      requestAnimationFrame(animate);
+    } else {
+      spinning = false;
+      const selectedIdx = getSelectedIndex();
+
+      if (winners.length === 0) {
+        winners.push(names[selectedIdx]);
+        eliminatedIndex = selectedIdx;
+        drawWheel();
+
+        document.getElementById('centerLabel').textContent = '1/2';
+        showWinnerOverlay(names[selectedIdx], () => {
+          showWinner(1, names[selectedIdx]);
+          document.getElementById('spinBtn').disabled = false;
+          document.getElementById('spinBtn').textContent = 'Draai voor winnaar 2';
+        }, null, 'Winnaar 1', 'Nog 1 te gaan');
+      } else if (winners.length === 1) {
+        let idx = selectedIdx;
+        if (idx === eliminatedIndex) {
+          idx = (idx + 1) % names.length;
+        }
+        winners.push(names[idx]);
+
+        document.getElementById('centerLabel').textContent = '2/2';
+        showWinnerOverlay(names[idx], () => {
+          showWinner(2, names[idx]);
+          // Show finale after short pause
+          setTimeout(() => {
+            showFinale(winners[0], winners[1]);
+          }, 400);
+        }, 'orange', 'Winnaar 2', '');
+      }
+    }
+  }
+
+  requestAnimationFrame(animate);
+}
+
+function showWinnerOverlay(name, onDone, colorClass, labelText, subText) {
+  const overlay = document.getElementById('winnerOverlay');
+  const overlayName = document.getElementById('overlayName');
+  const overlayLabel = document.querySelector('.winner-overlay .overlay-label');
+  const overlaySub = document.querySelector('.winner-overlay .overlay-sub');
+
+  overlayName.textContent = name.toUpperCase();
+  overlayLabel.textContent = labelText || 'Winnaar 1';
+  overlaySub.textContent = subText !== undefined ? subText : 'Nog 1 te gaan';
+
+  // Set color variant
+  overlay.classList.remove('orange', 'fade-out');
+  if (colorClass) overlay.classList.add(colorClass);
+  overlay.style.opacity = '';
+  overlay.classList.add('active');
+
+  // Hold for 2.5s, then fade out
+  setTimeout(() => {
+    overlay.classList.remove('active');
+    overlay.classList.add('fade-out');
+
+    setTimeout(() => {
+      overlay.classList.remove('fade-out', 'orange');
+      overlay.style.opacity = '0';
+      if (onDone) onDone();
+    }, 500);
+  }, 2500);
+}
+
+function showFinale(name1, name2) {
+  const finale = document.getElementById('finaleOverlay');
+  document.getElementById('finaleName1').textContent = name1.toUpperCase();
+  document.getElementById('finaleName2').textContent = name2.toUpperCase();
+  finale.classList.add('active');
+  launchConfetti();
+
+  document.getElementById('spinBtn').style.display = 'none';
+  document.getElementById('resetBtn').style.display = 'block';
+}
+
+function showWinner(num, name) {
+  const panel = document.getElementById('winnersPanel');
+  const list = document.getElementById('winnersList');
+  panel.style.display = 'block';
+
+  const card = document.createElement('div');
+  card.className = 'winner-card';
+  card.innerHTML = `
+    <span class="winner-number">Winnaar ${num}</span>
+    <span class="winner-name">${name.toUpperCase()}</span>
+  `;
+  list.appendChild(card);
+}
+
+function resetWheel() {
+  winners = [];
+  eliminatedIndex = -1;
+  currentAngle = 0;
+
+  document.getElementById('winnersList').innerHTML = '';
+  document.getElementById('winnersPanel').style.display = 'none';
+  document.getElementById('finaleOverlay').classList.remove('active');
+  document.getElementById('spinBtn').style.display = 'block';
+  document.getElementById('spinBtn').disabled = false;
+  document.getElementById('spinBtn').textContent = 'Draai het rad';
+  document.getElementById('resetBtn').style.display = 'none';
+  document.getElementById('centerLabel').textContent = 'Spin';
+
+  drawWheel();
+}
+
+// Confetti in TKK brand colors
+function launchConfetti() {
+  const cCanvas = document.getElementById('confetti');
+  cCanvas.width = window.innerWidth;
+  cCanvas.height = window.innerHeight;
+  const cCtx = cCanvas.getContext('2d');
+  const pieces = [];
+  const colors = ['#00B800', '#FC470F', '#3391FF', '#E80094', '#000'];
+
+  for (let i = 0; i < 180; i++) {
+    pieces.push({
+      x: Math.random() * cCanvas.width,
+      y: Math.random() * -cCanvas.height,
+      w: 8 + Math.random() * 10,
+      h: 4 + Math.random() * 6,
+      color: colors[Math.floor(Math.random() * colors.length)],
+      speed: 2.5 + Math.random() * 4,
+      angle: Math.random() * Math.PI * 2,
+      spin: (Math.random() - 0.5) * 0.15,
+      drift: (Math.random() - 0.5) * 1.5,
+      opacity: 1
+    });
+  }
+
+  let frame = 0;
+  function animateConfetti() {
+    cCtx.clearRect(0, 0, cCanvas.width, cCanvas.height);
+    frame++;
+
+    let alive = false;
+    pieces.forEach(p => {
+      p.y += p.speed;
+      p.x += p.drift;
+      p.angle += p.spin;
+      if (frame > 120) p.opacity -= 0.015;
+
+      if (p.opacity > 0 && p.y < cCanvas.height + 20) {
+        alive = true;
+        cCtx.save();
+        cCtx.translate(p.x, p.y);
+        cCtx.rotate(p.angle);
+        cCtx.globalAlpha = Math.max(0, p.opacity);
+        cCtx.fillStyle = p.color;
+        cCtx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+        cCtx.restore();
+      }
+    });
+
+    if (alive) requestAnimationFrame(animateConfetti);
+  }
+
+  animateConfetti();
+}
+
+// Init
+drawWheel();
+</script>
+</body>
+</html>
