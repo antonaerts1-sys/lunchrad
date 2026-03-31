@@ -470,19 +470,37 @@ function initAudio() {
   if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 }
 
-function playTick(volume = 0.3) {
+function playTick(volume = 0.15) {
   if (!audioCtx) return;
-  const osc = audioCtx.createOscillator();
+  const t = audioCtx.currentTime;
+
+  // Soft wooden "tok" — filtered noise burst
+  const bufferSize = audioCtx.sampleRate * 0.03; // 30ms
+  const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+  const data = buffer.getChannelData(0);
+  for (let i = 0; i < bufferSize; i++) {
+    // Noise that decays fast
+    data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / bufferSize, 8);
+  }
+
+  const noise = audioCtx.createBufferSource();
+  noise.buffer = buffer;
+
+  // Bandpass filter to get a woody tone
+  const filter = audioCtx.createBiquadFilter();
+  filter.type = 'bandpass';
+  filter.frequency.setValueAtTime(400 + Math.random() * 200, t); // slight variation
+  filter.Q.setValueAtTime(2, t);
+
   const gain = audioCtx.createGain();
-  osc.connect(gain);
+  gain.gain.setValueAtTime(volume * 0.6, t);
+  gain.gain.exponentialRampToValueAtTime(0.001, t + 0.035);
+
+  noise.connect(filter);
+  filter.connect(gain);
   gain.connect(audioCtx.destination);
-  osc.type = 'triangle';
-  osc.frequency.setValueAtTime(1800, audioCtx.currentTime);
-  osc.frequency.exponentialRampToValueAtTime(600, audioCtx.currentTime + 0.04);
-  gain.gain.setValueAtTime(volume, audioCtx.currentTime);
-  gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.06);
-  osc.start(audioCtx.currentTime);
-  osc.stop(audioCtx.currentTime + 0.06);
+  noise.start(t);
+  noise.stop(t + 0.04);
 }
 
 // ===== POINTER BOUNCE =====
@@ -624,7 +642,7 @@ function spin() {
     if (currentSegIndex !== lastSegIndex) {
       // Volume based on speed (louder when slower = more dramatic)
       const speed = 1 - progress;
-      const vol = progress > 0.7 ? 0.5 : 0.15 + speed * 0.2;
+      const vol = progress > 0.7 ? 0.25 : 0.1 + speed * 0.1;
       playTick(vol);
       bouncePointer();
       lastSegIndex = currentSegIndex;
