@@ -603,8 +603,23 @@ function spin() {
   document.getElementById('centerLabel').textContent = '...';
 
   // More rotations for more drama (7-11 full rotations)
-  const extraRotations = (7 + Math.random() * 4) * 2 * Math.PI;
-  const targetAngle = currentAngle + extraRotations;
+  const baseRotations = (7 + Math.random() * 4) * 2 * Math.PI;
+  let targetAngle = currentAngle + baseRotations;
+
+  // For 2nd spin: ensure we land on a valid (non-eliminated) segment
+  if (eliminatedIndex >= 0) {
+    // Pick a random valid index (exclude eliminated)
+    const validIndices = names.map((_, i) => i).filter(i => i !== eliminatedIndex);
+    const chosenIdx = validIndices[Math.floor(Math.random() * validIndices.length)];
+    // Calculate exact angle to land pointer on the middle of chosen segment
+    const pointerAngle = -Math.PI / 2;
+    const segCenter = chosenIdx * segAngle + segAngle / 2;
+    // We need (pointerAngle - targetAngle) mod 2PI = segCenter
+    const fullRotations = Math.floor(baseRotations / (2 * Math.PI)) * 2 * Math.PI;
+    targetAngle = currentAngle + fullRotations + (pointerAngle - segCenter - currentAngle % (2 * Math.PI) + 4 * Math.PI) % (2 * Math.PI);
+    // Ensure enough total rotation
+    if (targetAngle - currentAngle < 7 * 2 * Math.PI) targetAngle += 2 * Math.PI;
+  }
   const startAngle = currentAngle;
   // Longer duration for more suspense
   const duration = 6000 + Math.random() * 2000;
@@ -670,10 +685,7 @@ function spin() {
           }, null, 'Winnaar 1', 'Nog 1 te gaan');
         });
       } else if (winners.length === 1) {
-        let idx = selectedIdx;
-        if (idx === eliminatedIndex) {
-          idx = (idx + 1) % names.length;
-        }
+        const idx = selectedIdx;
 
         flashWinner(idx, () => {
           winners.push(names[idx]);
