@@ -497,6 +497,64 @@
     100% { opacity: 0; transform: translate(var(--x1), var(--y1)) rotate(var(--a)) scale(1); }
   }
 
+  /* ===== Tussenakte: de commentator (na winnaar 2, voor het slotscherm) ===== */
+  .interlude {
+    position: fixed; inset: 0; background: #fff; z-index: 65;
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; pointer-events: none; transition: opacity 0.35s ease;
+  }
+  .interlude.active { opacity: 1; pointer-events: auto; cursor: pointer; }
+  .interlude-line {
+    position: relative; max-width: 90vw; text-align: center; color: #000;
+    font-family: 'GTFlexa Condensed', 'GTFlexa', sans-serif; text-transform: uppercase;
+    font-size: clamp(52px, 9.5vw, 150px); line-height: 0.9; text-wrap: balance;
+  }
+  .interlude-line .w { display: inline-block; }
+  /* zin 1: knalt erin */
+  .interlude-line.slam { animation: slamIn 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) both; transform: rotate(-2deg); }
+  @keyframes slamIn {
+    0% { opacity: 0; transform: scale(0.15) rotate(-12deg); }
+    70% { opacity: 1; transform: scale(1.12) rotate(-2deg); }
+    100% { opacity: 1; transform: scale(1) rotate(-2deg); }
+  }
+  /* zin 2: woord voor woord, laatste woord bibbert */
+  .interlude-line.words .w { opacity: 0; animation: wordIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) both; animation-delay: calc(var(--i) * 0.22s); }
+  @keyframes wordIn { 0% { opacity: 0; transform: translateX(-40px); } 100% { opacity: 1; transform: translateX(0); } }
+  .interlude-line.words .w.shaky { animation: wordIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) both, shake 0.12s 0.9s linear 12; animation-delay: calc(var(--i) * 0.22s), 0.9s; }
+  @keyframes shake { 0%, 100% { transform: translate(0, 0) rotate(0); } 25% { transform: translate(-2px, 1px) rotate(-1deg); } 75% { transform: translate(2px, -1px) rotate(1deg); } }
+  /* zin 3: rijst op, pijl onder het laatste woord */
+  .interlude-line.rise { overflow: hidden; padding: 0.05em 0.1em 0.35em; }
+  .interlude-line.rise .inner { display: block; animation: nameRise 0.8s cubic-bezier(0.16, 1, 0.3, 1) both; }
+  .interlude-line .underlined { position: relative; display: inline-block; }
+  .interlude-line .underlined svg {
+    position: absolute; left: 10%; bottom: -0.32em; width: 80%; height: auto;
+    opacity: 0; animation: arrowDraw 0.5s 0.9s ease-out both;
+  }
+  @keyframes arrowDraw { 0% { opacity: 0; transform: translateX(-20%); } 100% { opacity: 1; transform: translateX(0); } }
+  /* bonzende hartjes op de achtergrond, de hele tussenakte lang */
+  .interlude-hearts { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
+  .interlude-heart {
+    position: absolute; width: var(--w);
+    transform: rotate(var(--r));
+    animation: heartbeat var(--d) ease-in-out infinite, finalePop 0.5s var(--delay) cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    animation-delay: var(--delay), var(--delay);
+  }
+  .interlude-heart svg { width: 100%; height: auto; display: block; }
+  @keyframes heartbeat {
+    0%   { transform: rotate(var(--r)) scale(1); }
+    14%  { transform: rotate(var(--r)) scale(1.22); }
+    28%  { transform: rotate(var(--r)) scale(1); }
+    42%  { transform: rotate(var(--r)) scale(1.16); }
+    70%  { transform: rotate(var(--r)) scale(1); }
+    100% { transform: rotate(var(--r)) scale(1); }
+  }
+  @media (prefers-reduced-motion: reduce) { .interlude-heart { animation: none; } }
+  .interlude-line { z-index: 1; }
+  .interlude-skip {
+    position: absolute; bottom: 24px; left: 0; right: 0; text-align: center;
+    font-family: 'GTFlexa', sans-serif; font-size: 14px; color: #000; opacity: 0.45;
+  }
+
   /* ===== Muisspoor ===== */
   .trail-canvas {
     position: fixed; inset: 0; pointer-events: none; z-index: 300;
@@ -567,6 +625,7 @@
 
 <div class="flash-layer" id="flashLayer" aria-hidden="true"></div>
 <div class="arrow-layer" id="arrowLayer" aria-hidden="true"></div>
+<div class="interlude" id="interlude" aria-live="polite"><div class="interlude-line" id="interludeLine"></div></div>
 <footer class="site-foot"><svg class="logo" role="img" aria-label="The Kind Kids" width="265" height="77" viewBox="0 0 265 77" fill="none" xmlns="http://www.w3.org/2000/svg">
 <path d="M47.2752 25.5912V30.601H40.8947V51.554H35.5162V30.601H29.1357V25.5912H47.2672H47.2752Z" fill="black"></path>
 <path d="M61.4069 25.5912H66.7854V51.546H61.4069V41.0534H53.8401V51.546H48.4615V25.5912H53.8401V36.0517H61.4069V25.5912Z" fill="black"></path>
@@ -1018,8 +1077,8 @@ function spin() {
           showWinnerOverlay(names[idx], () => {
             showWinner(2, names[idx]);
             setTimeout(() => {
-              showFinale(winners[0], winners[1]);
-            }, 400);
+              playInterlude(() => showFinale(winners[0], winners[1], true));
+            }, 300);
           }, 'orange', 'Winnaar 2', '');
         });
       }
@@ -1177,6 +1236,90 @@ function playChoir(t, dur = 2.4) {
     .forEach(([f, delay, vol]) => playChoirVoice(f, t + delay, dur - delay, vol));
 }
 
+// ===== AUDIO: trommel voor de commentator =====
+function playDrumHit(t, vol = 0.5) {
+  // diepe slag: sinus die snel zakt + korte ruisklap
+  const osc = audioCtx.createOscillator();
+  osc.frequency.setValueAtTime(160, t);
+  osc.frequency.exponentialRampToValueAtTime(40, t + 0.25);
+  const g = audioCtx.createGain();
+  g.gain.setValueAtTime(vol, t);
+  g.gain.exponentialRampToValueAtTime(0.001, t + 0.45);
+  osc.connect(g).connect(audioCtx.destination);
+  osc.start(t); osc.stop(t + 0.5);
+  const len = audioCtx.sampleRate * 0.06;
+  const buf = audioCtx.createBuffer(1, len, audioCtx.sampleRate);
+  const d = buf.getChannelData(0);
+  for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 3);
+  const n = audioCtx.createBufferSource(); n.buffer = buf;
+  const ng = audioCtx.createGain(); ng.gain.value = vol * 0.5;
+  n.connect(ng).connect(audioCtx.destination); n.start(t);
+}
+function playDrumRoll(t, dur = 1.6) {
+  // roffel: snelle zachte slagen die aanzwellen
+  const hits = Math.floor(dur / 0.055);
+  for (let i = 0; i < hits; i++) playDrumHit(t + i * 0.055, 0.04 + 0.22 * (i / hits));
+  playDrumHit(t + dur + 0.05, 0.6);
+}
+
+// ===== TUSSENAKTE: de commentator =====
+let interludeTimers = [], interludeDone = null;
+function playInterlude(onDone) {
+  const box = document.getElementById('interlude');
+  const line = document.getElementById('interludeLine');
+  const heartColors = ['#FC470F', '#E80094', '#00B800', '#3391FF', '#000000'];
+  // vaste plekken langs de randen, zodat het midden vrij blijft voor de tekst
+  const heartSpots = [[4, 8], [22, 4], [78, 6], [93, 14], [3, 26], [94, 64], [6, 78], [24, 88], [74, 86], [92, 76], [48, 4], [50, 90]];
+  const arrow = '<svg viewBox="0 0 29 14" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M27.1102 5.87437C24.3923 5.87437 21.9151 3.65336 21.9151 1.21436V0.214355H19.6855V1.21436C19.6855 2.98836 20.5528 4.65236 21.914 5.87437H0.354614V7.87437H21.914C20.5528 9.09637 19.6855 10.7604 19.6855 12.5344V13.5344H21.9151V12.5344C21.9151 10.0954 24.3923 7.87437 27.1102 7.87437H28.225V5.87437H27.1102Z" fill="black"/></svg>';
+  const hearts = document.createElement('div');
+  hearts.className = 'interlude-hearts';
+  hearts.innerHTML = heartSpots.map(([x, y], i) => {
+    const w = 50 + Math.random() * 70;
+    return `<span class="interlude-heart" style="left:${x}%;top:${y}%;color:${heartColors[i % heartColors.length]};--w:${w}px;--r:${((Math.random() - 0.5) * 40).toFixed(0)}deg;--d:${(0.9 + Math.random() * 0.5).toFixed(2)}s;--delay:${(i * 0.12).toFixed(2)}s">${KRIBBELS.hart}</span>`;
+  }).join('');
+
+  const at = (ms, fn) => interludeTimers.push(setTimeout(fn, ms));
+  const clear = () => { line.className = 'interlude-line'; line.innerHTML = ''; };
+  const finish = () => {
+    interludeTimers.forEach(clearTimeout); interludeTimers = [];
+    box.classList.remove('active');
+    box.onclick = null;
+    clear();
+    const cb = interludeDone; interludeDone = null;
+    if (cb) cb();
+  };
+  interludeDone = onDone;
+  box.onclick = finish;               // klik = doorspoelen naar het slotscherm
+  box.innerHTML = '';
+  box.appendChild(hearts);
+  box.appendChild(line);
+  const skip = document.createElement('div'); skip.className = 'interlude-skip'; skip.textContent = 'Klik om door te spoelen';
+  box.appendChild(skip);
+  box.classList.add('active');
+  const t0 = audioCtx ? audioCtx.currentTime : 0;
+
+  // 1. Ongelofelijk.
+  at(500, () => {
+    clear(); line.classList.add('slam');
+    line.innerHTML = 'Ongelofelijk.';
+    if (audioCtx) playDrumHit(audioCtx.currentTime + 0.05, 0.7);
+  });
+  // 2. Wat een spanning.
+  at(2300, clear);
+  at(2800, () => {
+    clear(); line.classList.add('words');
+    line.innerHTML = ['Wat', 'een', 'spanning.'].map((w, i) => `<span class="w${i === 2 ? ' shaky' : ''}" style="--i:${i}">${w}</span>`).join(' ');
+    if (audioCtx) playDrumRoll(audioCtx.currentTime + 0.05, 1.6);
+  });
+  // 3. Wat een prachtige editie alweer.
+  at(5300, clear);
+  at(5800, () => {
+    clear(); line.classList.add('rise');
+    line.innerHTML = `<span class="inner">Wat een prachtige editie <span class="underlined">alweer.${arrow}</span></span>`;
+    if (audioCtx) playChoir(audioCtx.currentTime + 0.1, 2.6);   // het koor zet al in
+  });
+  at(8300, finish);
+}
 // ===== AUDIO: trompetfanfare bij de finale =====
 function playBrass(freq, t, dur, vol = 0.14) {
   // Koperblazer: twee licht ontstemde zaagtanden door een lowpass die meeopent met de aanslag
@@ -1227,11 +1370,15 @@ function playFanfare(startAt) {
   [261.63, 329.63, 392.0].forEach(f => playBrass(f, chordStart, 1.1, 0.09));
 }
 
-function showFinale(name1, name2) {
+function showFinale(name1, name2, choirAlreadyPlayed) {
   if (audioCtx) {
     const t = audioCtx.currentTime + 0.1;
-    playChoir(t, 2.4);          // aaaaaah...
-    playFanfare(t + 2.1);       // ...en dan de trompet, net voor het koor wegsterft
+    if (choirAlreadyPlayed) {
+      playFanfare(t + 0.2);     // koor kwam uit de tussenakte, trompet valt meteen in
+    } else {
+      playChoir(t, 2.4);        // aaaaaah...
+      playFanfare(t + 2.1);     // ...en dan de trompet, net voor het koor wegsterft
+    }
   }
   const finale = document.getElementById('finaleOverlay');
   finale.classList.remove('active');
@@ -1263,6 +1410,8 @@ function showWinner(num, name) {
 
 function resetWheel() {
   confettiRun++;
+  interludeTimers.forEach(clearTimeout); interludeTimers = []; interludeDone = null;
+  document.getElementById('interlude').classList.remove('active');
   document.getElementById('gearBtn').disabled = false;
   winners = [];
   eliminatedIndex = -1;
