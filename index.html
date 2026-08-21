@@ -1126,6 +1126,7 @@ function showWinnerOverlay(name, onDone, colorClass, labelText, subText) {
     setTimeout(() => {
       overlay.classList.remove('fade-out', 'orange');
       overlay.style.opacity = '0';
+      confettiRun++; // terug op het rad: regen meteen stoppen
       if (onDone) onDone();
     }, 500);
   }, 4600);
