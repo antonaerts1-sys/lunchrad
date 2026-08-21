@@ -1,0 +1,18 @@
+# Lunchrad
+
+## Wat is dit
+"Lunch van de Maand", een draairad voor The Kind Kids dat bepaalt wie de lunch verzorgt (of wint). Eén statische `index.html` met een canvas-rad met een namenlijst (45 deelnemers sinds 21 augustus 2026), tick-geluiden, pointer bounce, dramatische easing en fullscreen-reveal. Twee spins per trekking; de tweede spin kan niet op een al geëlimineerde persoon landen (fair randomness, zie git log).
+
+## Stack
+Statische HTML, geen build, geen dependencies. Inter-font via Google Fonts.
+
+## Deployment
+GitHub Pages workflow in `.github/` (sinds 31 maart 2026).
+
+## Starten
+Open `index.html` in de browser.
+
+## Staat
+- Werkend, gebruikt eindproduct, geen experiment.
+- Sluimert sinds 1 juni 2026 (laatste commit: namenlijst bijgewerkt naar 44 deelnemers). Namen bijwerken gebeurt rechtstreeks in `index.html`.
+- Er bestaat ook `tkk-rad/`, een veel uitgebreidere Next.js-versie van hetzelfde idee.
