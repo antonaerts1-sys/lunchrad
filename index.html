@@ -483,6 +483,20 @@
   }
   @media (prefers-reduced-motion: reduce) { .flash { animation-duration: 2.6s; } }
 
+  /* ===== Pijlen die naar de hendel schieten (na winnaar 1) ===== */
+  .arrow-layer { position: fixed; inset: 0; pointer-events: none; z-index: 6; overflow: hidden; }
+  .arrow-layer svg {
+    position: absolute; left: 0; top: 0; width: 110px; height: auto;
+    transform-origin: 0 50%;
+    animation: arrowShoot 1.4s cubic-bezier(0.2, 0.7, 0.3, 1) both;
+  }
+  @keyframes arrowShoot {
+    0%   { opacity: 0; transform: translate(var(--x0), var(--y0)) rotate(var(--a)) scale(0.7); }
+    15%  { opacity: 1; }
+    80%  { opacity: 1; }
+    100% { opacity: 0; transform: translate(var(--x1), var(--y1)) rotate(var(--a)) scale(1); }
+  }
+
   /* ===== Muisspoor ===== */
   .trail-canvas {
     position: fixed; inset: 0; pointer-events: none; z-index: 300;
@@ -551,6 +565,7 @@
 <div class="winners-panel" id="winnersPanel"><span id="winnersList"></span></div>
 
 <div class="flash-layer" id="flashLayer" aria-hidden="true"></div>
+<div class="arrow-layer" id="arrowLayer" aria-hidden="true"></div>
 <footer class="site-foot"><svg class="logo" role="img" aria-label="The Kind Kids" width="265" height="77" viewBox="0 0 265 77" fill="none" xmlns="http://www.w3.org/2000/svg">
 <path d="M47.2752 25.5912V30.601H40.8947V51.554H35.5162V30.601H29.1357V25.5912H47.2672H47.2752Z" fill="black"></path>
 <path d="M61.4069 25.5912H66.7854V51.546H61.4069V41.0534H53.8401V51.546H48.4615V25.5912H53.8401V36.0517H61.4069V25.5912Z" fill="black"></path>
@@ -1413,6 +1428,40 @@ function launchConfetti(duration = 14000, onlyImages = null, count = 160) {
     setTimeout(loop, 1800 + Math.random() * 2200);
   }
   setTimeout(loop, 1500);
+})();
+
+// ===== PIJLEN NAAR DE HENDEL: vanaf winnaar 1 tot je opnieuw trekt =====
+(function arrowsToLever() {
+  const layer = document.getElementById('arrowLayer');
+  const arrow = '<svg viewBox="0 0 29 14" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M27.1102 5.87437C24.3923 5.87437 21.9151 3.65336 21.9151 1.21436V0.214355H19.6855V1.21436C19.6855 2.98836 20.5528 4.65236 21.914 5.87437H0.354614V7.87437H21.914C20.5528 9.09637 19.6855 10.7604 19.6855 12.5344V13.5344H21.9151V12.5344C21.9151 10.0954 24.3923 7.87437 27.1102 7.87437H28.225V5.87437H27.1102Z" fill="black"/></svg>';
+  function active() {
+    return !document.hidden && winners.length === 1 && !spinning
+      && !document.querySelector('.finale-overlay.active, .winner-overlay.active, .settings-panel.open');
+  }
+  function shoot() {
+    const hint = document.getElementById('spinBtn').getBoundingClientRect();
+    const heart = document.querySelector('.lever-knob').getBoundingClientRect();
+    // van net rechts van de hint naar net voor het hartje
+    const x0 = hint.right + 10 + (Math.random() - 0.5) * 10, y0 = hint.top + hint.height / 2 + (Math.random() - 0.5) * 10;
+    const tx = heart.left - 8, ty = heart.top + heart.height / 2;
+    const dx = tx - x0, dy = ty - y0, len = Math.hypot(dx, dy);
+    if (len < 60) return;
+    const a = Math.atan2(dy, dx) * 180 / Math.PI;
+    const s = 0.78; // stop net voor het hart
+    const el = document.createElement('div');
+    el.innerHTML = arrow;
+    const svg = el.firstChild;
+    svg.style.setProperty('--x0', x0 + 'px'); svg.style.setProperty('--y0', (y0 - 27) + 'px');
+    svg.style.setProperty('--x1', (x0 + dx * s) + 'px'); svg.style.setProperty('--y1', (y0 + dy * s - 27) + 'px');
+    svg.style.setProperty('--a', a.toFixed(1) + 'deg');
+    layer.appendChild(svg);
+    svg.addEventListener('animationend', () => svg.remove());
+  }
+  function loop() {
+    if (active()) shoot(); else layer.innerHTML = '';
+    setTimeout(loop, 650 + Math.random() * 400);
+  }
+  loop();
 })();
 
 // ===== MUISSPOOR: Kind Kids-artefacten achter de cursor =====
