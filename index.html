@@ -725,6 +725,44 @@ function spin() {
 }
 
 // ===== FULLSCREEN WINNER OVERLAY =====
+
+// ===== AUDIO: casino-belletjes bij een winnaar =====
+function playBell(freq, t, dur = 0.9, vol = 0.25) {
+  // Een belletje = grondtoon + twee onharmonische boventonen, snel aanslaan, lang uitsterven
+  [[1, 1], [2.76, 0.45], [5.4, 0.18]].forEach(([ratio, amp]) => {
+    const osc = audioCtx.createOscillator();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(freq * ratio, t);
+    const g = audioCtx.createGain();
+    g.gain.setValueAtTime(0, t);
+    g.gain.linearRampToValueAtTime(vol * amp, t + 0.005);
+    g.gain.exponentialRampToValueAtTime(0.0005, t + dur / ratio);
+    osc.connect(g).connect(audioCtx.destination);
+    osc.start(t);
+    osc.stop(t + dur);
+  });
+}
+
+function playJackpot(big = false) {
+  if (!audioCtx) return;
+  const t0 = audioCtx.currentTime + 0.05;
+  // TING TING TING: oplopende belletjes, steeds sneller
+  const notes = [1046.5, 1318.5, 1568, 2093, 1568, 2093, 2637];
+  let t = t0;
+  notes.forEach((f, i) => {
+    playBell(f, t, 0.7, 0.22);
+    t += i < 3 ? 0.14 : 0.09;
+  });
+  // Slotakkoord: grote bel met een shimmer
+  [1046.5, 1318.5, 1568, 2093].forEach((f, i) => playBell(f, t + 0.05 + i * 0.02, 1.8, 0.2));
+  if (big) {
+    // Jackpot-rammel: snelle hoge belletjes eronder, zoals munten die vallen
+    for (let i = 0; i < 14; i++) {
+      playBell(2637 + (i % 3) * 220 + Math.random() * 80, t + 0.15 + i * 0.06, 0.35, 0.08);
+    }
+  }
+}
+
 function showWinnerOverlay(name, onDone, colorClass, labelText, subText) {
   const overlay = document.getElementById('winnerOverlay');
   const overlayName = document.getElementById('overlayName');
@@ -749,6 +787,7 @@ function showWinnerOverlay(name, onDone, colorClass, labelText, subText) {
   if (colorClass) overlay.classList.add(colorClass);
   overlay.style.opacity = '';
   overlay.classList.add('active');
+  playJackpot(subText === '');
 
   setTimeout(() => {
     overlay.classList.remove('active');
