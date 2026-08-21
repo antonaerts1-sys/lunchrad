@@ -266,52 +266,27 @@
   }
   .settings-all:hover { background: #000; color: #fff; }
 
+  /* Winnaar-tot-nu-toe: één rustige regel onder de hint, geen vlak */
   .winners-panel {
-    background: #00B800;
-    border-radius: 24px;
-    padding: 32px 36px;
-    width: 100%;
-    max-width: 540px;
     display: none;
-  }
-
-  .winners-panel h2 {
-    font-size: 28px;
-    font-family: 'GTFlexa Condensed', 'GTFlexa', sans-serif; font-weight: 400;
-    text-transform: uppercase;
-    margin-bottom: 20px;
+    margin-top: 6px;
+    font-family: 'GTFlexa', sans-serif;
+    font-size: 17px;
     color: #000;
-  }
-
-  .winner-card {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    padding: 14px 20px;
-    background: rgba(0,0,0,0.08);
-    border-radius: 16px;
-    margin-bottom: 10px;
+    text-align: center;
     animation: slideIn 0.5s ease;
   }
-
-  .winner-card:last-child { margin-bottom: 0; }
-
-  .winner-number {
-    font-size: 12px;
-    font-family: 'GTFlexa Condensed', 'GTFlexa', sans-serif; font-weight: 400;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    color: #000;
-    opacity: 0.5;
-    min-width: 90px;
+  .winners-panel .winner-name {
+    font-family: 'GTFlexa Condensed', 'GTFlexa', sans-serif; text-transform: uppercase;
+    font-size: 24px; line-height: 1; margin-left: 6px; vertical-align: -1px;
+    display: inline-block; transform-origin: center;
+    animation: namePulse 1.6s ease-in-out infinite;
   }
-
-  .winner-name {
-    font-size: 22px;
-    font-family: 'GTFlexa Condensed', 'GTFlexa', sans-serif; font-weight: 400;
-    text-transform: uppercase;
-    color: #000;
+  @keyframes namePulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.12); }
   }
+  @media (prefers-reduced-motion: reduce) { .winners-panel .winner-name { animation: none; } }
 
   @keyframes slideIn {
     from { opacity: 0; transform: translateY(12px); }
@@ -573,10 +548,7 @@
 <div class="spin-btn" id="spinBtn" aria-live="polite">Trek aan de hendel</div>
 <button class="reset-btn" id="resetBtn" onclick="resetWheel()">Opnieuw</button>
 
-<div class="winners-panel" id="winnersPanel">
-  <h2>Winnaars</h2>
-  <div id="winnersList"></div>
-</div>
+<div class="winners-panel" id="winnersPanel"><span id="winnersList"></span></div>
 
 <div class="flash-layer" id="flashLayer" aria-hidden="true"></div>
 <footer class="site-foot"><svg class="logo" role="img" aria-label="The Kind Kids" width="265" height="77" viewBox="0 0 265 77" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -1267,14 +1239,11 @@ function showWinner(num, name) {
   const panel = document.getElementById('winnersPanel');
   const list = document.getElementById('winnersList');
   panel.style.display = 'block';
-
-  const card = document.createElement('div');
-  card.className = 'winner-card';
-  card.innerHTML = `
-    <span class="winner-number">Winnaar ${num}</span>
-    <span class="winner-name">${name.toUpperCase()}</span>
-  `;
-  list.appendChild(card);
+  if (num === 1) {
+    list.innerHTML = `Alvast één winnaar: <span class="winner-name">${name.toUpperCase()}</span>`;
+  } else {
+    list.innerHTML = `Winnaars: <span class="winner-name">${winners[0].toUpperCase()}</span> &amp; <span class="winner-name">${name.toUpperCase()}</span>`;
+  }
 }
 
 function resetWheel() {
