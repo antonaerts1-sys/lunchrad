@@ -174,6 +174,7 @@
     background: transparent;
     color: #000;
     border: none;
+    pointer-events: none;
     padding: 8px 16px;
     font-family: 'GTFlexa', sans-serif;
     font-size: 18px;
@@ -186,9 +187,8 @@
     margin-bottom: 16px;
   }
 
-  .spin-btn:hover { opacity: 0.6; }
   .spin-btn:active { transform: scale(0.97); }
-  .spin-btn:disabled { opacity: 0.35; cursor: default; }
+  .spin-btn.disabled { opacity: 0.35; }
 
   .reset-btn {
     background: #000;
@@ -574,7 +574,7 @@
 </div>
 </div>
 
-<button class="spin-btn" id="spinBtn" onclick="spin()">Trek aan de hendel</button>
+<div class="spin-btn" id="spinBtn" aria-live="polite">Trek aan de hendel</div>
 <button class="reset-btn" id="resetBtn" onclick="resetWheel()">Opnieuw</button>
 
 <div class="winners-panel" id="winnersPanel">
@@ -714,6 +714,12 @@ let winners = [];
 let eliminatedIndex = -1;
 let flashIndex = -1;
 let flashPhase = 0;
+
+function setHintDisabled(v) {
+  const el = document.getElementById('spinBtn');
+  el.disabled = v;                 // property, gelezen door canPull() van de hendel
+  el.classList.toggle('disabled', v);
+}
 
 // ===== HENDEL: trekken = draaien =====
 (function leverControl() {
@@ -933,7 +939,7 @@ function spin() {
   document.getElementById('flashLayer').innerHTML = '';
   spinning = true;
   document.getElementById('gearBtn').disabled = true;
-  document.getElementById('spinBtn').disabled = true;
+  setHintDisabled(true);
   document.getElementById('centerLabel').textContent = '...';
 
   // More rotations for more drama (7-11 full rotations)
@@ -1014,7 +1020,7 @@ function spin() {
           document.getElementById('centerLabel').textContent = '1/2';
           showWinnerOverlay(names[selectedIdx], () => {
             showWinner(1, names[selectedIdx]);
-            document.getElementById('spinBtn').disabled = false;
+            setHintDisabled(false);
             document.getElementById('spinBtn').textContent = 'Trek nog eens voor winnaar 2';
           }, null, 'Winnaar 1', 'Nog 1 te gaan');
         });
@@ -1286,7 +1292,7 @@ function resetWheel() {
   document.getElementById('winnersPanel').style.display = 'none';
   document.getElementById('finaleOverlay').classList.remove('active');
   document.getElementById('spinBtn').style.display = 'block';
-  document.getElementById('spinBtn').disabled = false;
+  setHintDisabled(false);
   document.getElementById('spinBtn').textContent = 'Trek aan de hendel';
   document.getElementById('resetBtn').style.display = 'none';
   document.getElementById('centerLabel').textContent = 'Spin';
