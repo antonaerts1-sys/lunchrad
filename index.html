@@ -525,12 +525,6 @@
   /* zin 3: rijst op, pijl onder het laatste woord */
   .interlude-line.rise { overflow: hidden; padding: 0.05em 0.1em 0.35em; }
   .interlude-line.rise .inner { display: block; animation: nameRise 0.8s cubic-bezier(0.16, 1, 0.3, 1) both; }
-  .interlude-line .underlined { position: relative; display: inline-block; }
-  .interlude-line .underlined svg {
-    position: absolute; left: 10%; bottom: -0.32em; width: 80%; height: auto;
-    opacity: 0; animation: arrowDraw 0.5s 0.9s ease-out both;
-  }
-  @keyframes arrowDraw { 0% { opacity: 0; transform: translateX(-20%); } 100% { opacity: 1; transform: translateX(0); } }
   /* bonzende hartjes op de achtergrond, de hele tussenakte lang */
   .interlude-hearts { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
   .interlude-heart {
@@ -1315,7 +1309,7 @@ function playInterlude(onDone) {
   at(5300, clear);
   at(5800, () => {
     clear(); line.classList.add('rise');
-    line.innerHTML = `<span class="inner">Wat een prachtige editie <span class="underlined">alweer.${arrow}</span></span>`;
+    line.innerHTML = `<span class="inner">Wat een prachtige editie alweer.</span>`;
     if (audioCtx) playChoir(audioCtx.currentTime + 0.1, 2.6);   // het koor zet al in
   });
   at(8300, finish);
