@@ -139,6 +139,63 @@
 
   .reset-btn:hover { background: #333; }
 
+  /* ===== Tandwiel + aanwezigheidspaneel ===== */
+  .gear-btn {
+    position: fixed; top: 20px; right: 20px; z-index: 200;
+    width: 48px; height: 48px; border-radius: 50%;
+    background: #fff; border: 1px solid #000; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: transform 0.4s ease, background 0.2s;
+  }
+  .gear-btn:hover { transform: rotate(60deg); background: #ECEDEB; }
+  .gear-btn:disabled { opacity: 0.35; cursor: not-allowed; transform: none; }
+  .gear-badge {
+    position: absolute; top: -6px; right: -6px;
+    min-width: 22px; height: 22px; padding: 0 6px; border-radius: 11px;
+    background: #FC470F; color: #000; border: 1px solid #000;
+    font-family: 'GTFlexa Condensed', 'GTFlexa', sans-serif; font-size: 14px;
+    align-items: center; justify-content: center;
+  }
+  .settings-panel {
+    position: fixed; top: 0; right: 0; bottom: 0; width: 340px; max-width: 100vw;
+    background: #ECEDEB; border-left: 1px solid #000; z-index: 190;
+    transform: translateX(100%); transition: transform 0.3s ease;
+    display: flex; flex-direction: column;
+  }
+  .settings-panel.open { transform: translateX(0); }
+  .settings-head {
+    display: flex; justify-content: space-between; align-items: flex-start;
+    padding: 24px 24px 16px; border-bottom: 1px solid #000;
+  }
+  .settings-title {
+    font-family: 'GTFlexa Condensed', 'GTFlexa', sans-serif; text-transform: uppercase;
+    font-size: 28px; line-height: 0.9;
+  }
+  .settings-sub { font-size: 14px; margin-top: 6px; opacity: 0.7; }
+  .settings-close {
+    background: none; border: none; font-size: 32px; line-height: 1; cursor: pointer; color: #000;
+    margin-right: 56px;
+  }
+  .settings-list { flex: 1; overflow-y: auto; padding: 8px 0; }
+  .settings-item {
+    display: flex; align-items: center; gap: 12px; padding: 8px 24px; cursor: pointer;
+    font-size: 17px; transition: background 0.15s;
+  }
+  .settings-item:hover { background: rgba(0,0,0,0.05); }
+  .settings-item input { width: 18px; height: 18px; accent-color: #00B800; cursor: pointer; }
+  .settings-item.absent span { text-decoration: line-through; opacity: 0.45; }
+  .settings-foot {
+    padding: 16px 24px 24px; border-top: 1px solid #000;
+    display: flex; flex-direction: column; gap: 10px; font-size: 13px; opacity: 0.9;
+  }
+  .settings-all {
+    align-self: flex-start;
+    background: transparent; border: 1px solid #000; border-radius: 9999px; padding: 10px 18px;
+    font-family: 'GTFlexa Condensed', 'GTFlexa', sans-serif; text-transform: uppercase;
+    font-size: 16px; cursor: pointer; transition: all 0.2s;
+  }
+  .settings-all:hover { background: #000; color: #fff; }
+
   .winners-panel {
     background: #00B800;
     border-radius: 24px;
@@ -412,6 +469,26 @@
 <path d="M218.683 44.2035V43.0894H224.021V44.1314C224.021 46.3598 225.095 47.4659 227.059 47.4659C228.285 47.4659 229.135 47.0571 229.584 46.2796C229.88 45.7987 230.033 45.2376 230.033 44.5402C230.033 43.8749 229.961 43.3138 229.664 42.8329C229.255 42.1996 228.518 41.6465 227.219 41.2778L224.253 40.348C222.249 39.7548 220.807 38.7529 219.949 37.2299C219.244 36.0436 218.947 34.6729 218.947 32.9655C218.947 31.2582 219.316 29.7352 220.021 28.5169C221.32 26.2564 223.837 24.9579 227.323 24.9579C232.63 24.9579 235.628 27.6992 235.628 32.8533V33.9675H230.289V32.9255C230.289 30.7372 229.247 29.6631 227.323 29.6631C226.097 29.6631 225.247 30.0719 224.798 30.8494C224.542 31.3303 224.39 31.8914 224.39 32.5888C224.39 33.222 224.462 33.7751 224.726 34.224C225.135 34.8893 225.873 35.4103 227.171 35.7791L230.097 36.7409C232.133 37.294 233.584 38.3761 234.473 39.8911C235.139 41.0774 235.435 42.4882 235.435 44.1554C235.435 45.8227 235.099 47.4178 234.401 48.6042C233.063 50.9047 230.546 52.1631 227.019 52.1631C221.712 52.1631 218.674 49.3817 218.674 44.1875L218.683 44.2035Z" fill="black"></path>
 <path d="M132.386 76.6671C94.7682 76.6671 62.8738 73.6532 40.1493 67.946C13.93 61.3651 0.640015 51.4818 0.640015 38.5685C0.640015 5.42366 83.1855 0.469971 132.394 0.469971C171.55 0.469971 202.579 3.16324 224.614 8.46962C250.85 14.786 264.148 24.9178 264.148 38.5685C264.148 71.7134 181.602 76.6671 132.394 76.6671H132.386ZM132.386 4.45377C94.6079 4.45377 63.0421 7.30734 41.1032 12.7019C16.8878 18.6576 4.61579 27.3626 4.61579 38.5605C4.61579 59.6017 53.5756 72.6752 132.386 72.6752C211.196 72.6752 260.156 60.2429 260.156 38.5605C260.156 16.8781 214.779 4.44574 132.386 4.44574V4.45377Z" fill="black"></path>
 </svg>
+<button class="gear-btn" id="gearBtn" onclick="toggleSettings()" aria-label="Aanwezigen instellen" title="Wie is er vandaag?">
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
+  <span class="gear-badge" id="absentCount" style="display:none">0</span>
+</button>
+
+<div class="settings-panel" id="settingsPanel">
+  <div class="settings-head">
+    <div>
+      <div class="settings-title">Wie is er vandaag?</div>
+      <div class="settings-sub" id="settingsSub"></div>
+    </div>
+    <button class="settings-close" onclick="toggleSettings(false)" aria-label="Sluiten">&times;</button>
+  </div>
+  <div class="settings-list" id="settingsList"></div>
+  <div class="settings-foot">
+    <button class="settings-all" onclick="everyonePresent()">Iedereen aanwezig</button>
+    <span>Vink af wie er niet is. Wordt onthouden in deze browser.</span>
+  </div>
+</div>
+
 <h1>Lunch van de Maand</h1>
 <div class="subtitle">2 winnaars  /  1 lunch</div>
 
@@ -448,7 +525,7 @@
 <canvas class="confetti-canvas" id="confetti"></canvas>
 
 <script>
-const names = [
+const allNames = [
   "Jan H.", "Leen", "Kristof", "Bram", "Tim",
   "Annelies", "Eva V.", "Kim", "Stephanie", "Eva B.",
   "Karel-Jan", "Hannah", "Anton L.", "Eline", "Laure",
@@ -467,13 +544,63 @@ const H = canvas.height;
 const cx = W / 2;
 const cy = H / 2;
 const radius = W / 2 - 20;
-const segAngle = (2 * Math.PI) / names.length;
-
 const brandColors = ['#00B800', '#FC470F', '#3391FF', '#E80094'];
-const palette = names.map((_, i) => brandColors[i % 4]);
-// laatste vak mag niet dezelfde kleur hebben als het eerste (ze raken elkaar)
-if (palette[palette.length - 1] === palette[0]) {
-  palette[palette.length - 1] = brandColors.find(c => c !== palette[0] && c !== palette[palette.length - 2]);
+
+// ===== AFWEZIGEN (tandwiel): bewaard in de browser =====
+const ABSENT_KEY = 'lunchrad-afwezig';
+let absent = new Set();
+try { absent = new Set(JSON.parse(localStorage.getItem(ABSENT_KEY) || '[]')); } catch (e) {}
+absent = new Set([...absent].filter(n => allNames.includes(n)));
+
+let names = [], segAngle = 0, palette = [];
+function buildWheel() {
+  names = allNames.filter(n => !absent.has(n));
+  segAngle = (2 * Math.PI) / names.length;
+  palette = names.map((_, i) => brandColors[i % 4]);
+  // laatste vak mag niet dezelfde kleur hebben als het eerste (ze raken elkaar)
+  if (palette.length > 2 && palette[palette.length - 1] === palette[0]) {
+    palette[palette.length - 1] = brandColors.find(c => c !== palette[0] && c !== palette[palette.length - 2]);
+  }
+  const badge = document.getElementById('absentCount');
+  badge.textContent = absent.size;
+  badge.style.display = absent.size ? 'flex' : 'none';
+  document.getElementById('settingsSub').textContent =
+    absent.size ? `${names.length} op het rad, ${absent.size} afwezig` : `Iedereen aanwezig (${names.length})`;
+}
+buildWheel();
+
+function renderSettings() {
+  const list = document.getElementById('settingsList');
+  list.innerHTML = '';
+  allNames.forEach(n => {
+    const lbl = document.createElement('label');
+    lbl.className = 'settings-item' + (absent.has(n) ? ' absent' : '');
+    lbl.innerHTML = `<input type="checkbox" ${absent.has(n) ? '' : 'checked'}><span>${n}</span>`;
+    lbl.querySelector('input').addEventListener('change', e => {
+      if (e.target.checked) absent.delete(n); else absent.add(n);
+      lbl.classList.toggle('absent', !e.target.checked);
+      localStorage.setItem(ABSENT_KEY, JSON.stringify([...absent]));
+      buildWheel();
+      resetWheel();
+    });
+    list.appendChild(lbl);
+  });
+}
+
+function toggleSettings(open) {
+  if (spinning) return;
+  const panel = document.getElementById('settingsPanel');
+  const show = open !== undefined ? open : !panel.classList.contains('open');
+  if (show) renderSettings();
+  panel.classList.toggle('open', show);
+}
+
+function everyonePresent() {
+  absent.clear();
+  localStorage.removeItem(ABSENT_KEY);
+  renderSettings();
+  buildWheel();
+  resetWheel();
 }
 
 let currentAngle = 0;
@@ -617,7 +744,9 @@ function flashWinner(idx, callback) {
 function spin() {
   if (spinning) return;
   initAudio();
+  toggleSettings(false);
   spinning = true;
+  document.getElementById('gearBtn').disabled = true;
   document.getElementById('spinBtn').disabled = true;
   document.getElementById('centerLabel').textContent = '...';
 
@@ -726,83 +855,121 @@ function spin() {
 
 // ===== FULLSCREEN WINNER OVERLAY =====
 
-// ===== AUDIO: casino-belletjes bij een winnaar =====
-function playBell(freq, t, dur = 0.9, vol = 0.25) {
-  // Een belletje = grondtoon + twee onharmonische boventonen, snel aanslaan, lang uitsterven
-  [[1, 1], [2.76, 0.45], [5.4, 0.18]].forEach(([ratio, amp]) => {
+// ===== AUDIO: hemels geluid bij een winnaar =====
+// Zachte galm: convolver met een synthetische, uitstervende ruis-impuls
+let reverb = null;
+function getReverb() {
+  if (reverb) return reverb;
+  const len = audioCtx.sampleRate * 3;
+  const buf = audioCtx.createBuffer(2, len, audioCtx.sampleRate);
+  for (let ch = 0; ch < 2; ch++) {
+    const d = buf.getChannelData(ch);
+    for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 3.5);
+  }
+  const conv = audioCtx.createConvolver();
+  conv.buffer = buf;
+  const wet = audioCtx.createGain();
+  wet.gain.value = 0.6;
+  conv.connect(wet).connect(audioCtx.destination);
+  reverb = conv;
+  return conv;
+}
+
+// Eén zachte stem: sinus + een beetje driehoek, trage aanslag, lange uitklank, door de galm
+function playVoice(freq, t, attack, hold, release, vol = 0.12) {
+  const g = audioCtx.createGain();
+  g.gain.setValueAtTime(0, t);
+  g.gain.linearRampToValueAtTime(vol, t + attack);
+  g.gain.setValueAtTime(vol, t + attack + hold);
+  g.gain.exponentialRampToValueAtTime(0.0005, t + attack + hold + release);
+  // warm filter, haalt alle scherpte weg
+  const lp = audioCtx.createBiquadFilter();
+  lp.type = 'lowpass';
+  lp.frequency.setValueAtTime(1800, t);
+  g.connect(lp);
+  lp.connect(audioCtx.destination);
+  lp.connect(getReverb());
+  [['sine', 1, 1], ['triangle', 1, 0.25], ['sine', 2, 0.12]].forEach(([type, ratio, amp]) => {
     const osc = audioCtx.createOscillator();
-    osc.type = 'sine';
+    osc.type = type;
     osc.frequency.setValueAtTime(freq * ratio, t);
-    const g = audioCtx.createGain();
-    g.gain.setValueAtTime(0, t);
-    g.gain.linearRampToValueAtTime(vol * amp, t + 0.005);
-    g.gain.exponentialRampToValueAtTime(0.0005, t + dur / ratio);
-    osc.connect(g).connect(audioCtx.destination);
+    // heel lichte zweving (chorus)
+    osc.detune.setValueAtTime((Math.random() - 0.5) * 8, t);
+    const og = audioCtx.createGain();
+    og.gain.value = amp;
+    osc.connect(og).connect(g);
     osc.start(t);
-    osc.stop(t + dur);
+    osc.stop(t + attack + hold + release + 0.1);
   });
 }
 
 function playJackpot(big = false) {
   if (!audioCtx) return;
   const t0 = audioCtx.currentTime + 0.05;
-  // TING TING TING: oplopende belletjes, steeds sneller
-  const notes = [1046.5, 1318.5, 1568, 2093, 1568, 2093, 2637];
-  let t = t0;
-  notes.forEach((f, i) => {
-    playBell(f, t, 0.7, 0.22);
-    t += i < 3 ? 0.14 : 0.09;
-  });
-  // Slotakkoord: grote bel met een shimmer
-  [1046.5, 1318.5, 1568, 2093].forEach((f, i) => playBell(f, t + 0.05 + i * 0.02, 1.8, 0.2));
+  // Akkoord dat opengaat als een wolk: C-majeur, stem voor stem (C4 E4 G4 C5 E5)
+  const chord = [261.63, 329.63, 392.0, 523.25, 659.25];
+  chord.forEach((f, i) => playVoice(f, t0 + i * 0.18, 0.5, 1.2, 2.2, 0.11));
+  // Zachte stijgende "aaah": hoge stemmen die er traag bijkomen
+  [783.99, 1046.5].forEach((f, i) => playVoice(f, t0 + 0.9 + i * 0.3, 0.8, 0.8, 2.5, 0.05));
   if (big) {
-    // Jackpot-rammel: snelle hoge belletjes eronder, zoals munten die vallen
-    for (let i = 0; i < 14; i++) {
-      playBell(2637 + (i % 3) * 220 + Math.random() * 80, t + 0.15 + i * 0.06, 0.35, 0.08);
-    }
+    // Finale: nog een octaaf erboven, heel zacht, plus een diepe grondtoon eronder
+    playVoice(130.81, t0, 0.8, 2.0, 2.5, 0.09);
+    [1318.5, 1568].forEach((f, i) => playVoice(f, t0 + 1.6 + i * 0.3, 1.0, 0.6, 2.8, 0.03));
   }
 }
 
-function showWinnerOverlay(name, onDone, colorClass, labelText, subText) {
-  const overlay = document.getElementById('winnerOverlay');
-  const overlayName = document.getElementById('overlayName');
-  const overlayLabel = document.querySelector('.winner-overlay .overlay-label');
-  const overlaySub = document.querySelector('.winner-overlay .overlay-sub');
-
-  overlayName.textContent = name.toUpperCase();
-  overlayLabel.textContent = labelText || 'Winnaar 1';
-  overlaySub.textContent = subText !== undefined ? subText : 'Nog 1 te gaan';
-  overlaySub.style.display = subText === '' ? 'none' : 'block';
-
-  // Force re-trigger animations by cloning inner elements
-  overlayLabel.style.animation = 'none';
-  overlayName.style.animation = 'none';
-  overlaySub.style.animation = 'none';
-  void overlayLabel.offsetHeight; // reflow
-  overlayLabel.style.animation = '';
-  overlayName.style.animation = '';
-  overlaySub.style.animation = '';
-
-  overlay.classList.remove('orange', 'fade-out');
-  if (colorClass) overlay.classList.add(colorClass);
-  overlay.style.opacity = '';
-  overlay.classList.add('active');
-  playJackpot(subText === '');
-
-  setTimeout(() => {
-    overlay.classList.remove('active');
-    overlay.classList.add('fade-out');
-
-    setTimeout(() => {
-      overlay.classList.remove('fade-out', 'orange');
-      overlay.style.opacity = '0';
-      if (onDone) onDone();
-    }, 500);
-  }, 2800);
+// ===== AUDIO: trompetfanfare bij de finale =====
+function playBrass(freq, t, dur, vol = 0.14) {
+  // Koperblazer: twee licht ontstemde zaagtanden door een lowpass die meeopent met de aanslag
+  const filter = audioCtx.createBiquadFilter();
+  filter.type = 'lowpass';
+  filter.Q.setValueAtTime(1.2, t);
+  filter.frequency.setValueAtTime(freq * 1.5, t);
+  filter.frequency.linearRampToValueAtTime(freq * 4, t + 0.06);
+  filter.frequency.exponentialRampToValueAtTime(freq * 2.5, t + dur);
+  const g = audioCtx.createGain();
+  g.gain.setValueAtTime(0, t);
+  g.gain.linearRampToValueAtTime(vol, t + 0.04);
+  g.gain.setValueAtTime(vol, t + dur - 0.06);
+  g.gain.linearRampToValueAtTime(0, t + dur);
+  filter.connect(g).connect(audioCtx.destination);
+  g.connect(getReverb());
+  [-4, 4].forEach(cents => {
+    const osc = audioCtx.createOscillator();
+    osc.type = 'sawtooth';
+    osc.frequency.setValueAtTime(freq, t);
+    osc.detune.setValueAtTime(cents, t);
+    // kleine vibrato op lange noten
+    if (dur > 0.4) {
+      const lfo = audioCtx.createOscillator();
+      const lfoGain = audioCtx.createGain();
+      lfo.frequency.setValueAtTime(5.5, t);
+      lfoGain.gain.setValueAtTime(0, t);
+      lfoGain.gain.linearRampToValueAtTime(6, t + 0.3);
+      lfo.connect(lfoGain).connect(osc.detune);
+      lfo.start(t); lfo.stop(t + dur);
+    }
+    osc.connect(filter);
+    osc.start(t); osc.stop(t + dur + 0.02);
+  });
 }
 
-// ===== FINALE =====
+function playFanfare() {
+  if (!audioCtx) return;
+  let t = audioCtx.currentTime + 0.1;
+  // Ta-ta-ta-TAA, ta-ta-TAAAA (C C C E, C E G)
+  const melody = [[523.25, 0.13], [523.25, 0.13], [523.25, 0.13], [659.25, 0.42], [523.25, 0.13], [659.25, 0.13], [783.99, 1.1]];
+  melody.forEach(([f, d], i) => {
+    playBrass(f, t, d);
+    t += d + (i === 3 ? 0.08 : 0.02);
+  });
+  // Slotakkoord onder de lange noot: C-E-G een octaaf lager
+  const chordStart = t - 1.12;
+  [261.63, 329.63, 392.0].forEach(f => playBrass(f, chordStart, 1.1, 0.09));
+}
+
 function showFinale(name1, name2) {
+  playFanfare();
   const finale = document.getElementById('finaleOverlay');
 
   // Reset animations by removing and re-adding class
@@ -844,6 +1011,7 @@ function showWinner(num, name) {
 }
 
 function resetWheel() {
+  document.getElementById('gearBtn').disabled = false;
   winners = [];
   eliminatedIndex = -1;
   currentAngle = 0;

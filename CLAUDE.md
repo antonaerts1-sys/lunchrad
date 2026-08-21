@@ -14,5 +14,6 @@ Open `index.html` in de browser.
 
 ## Staat
 - Werkend, gebruikt eindproduct, geen experiment.
-- Sluimert sinds 1 juni 2026 (laatste commit: namenlijst bijgewerkt naar 44 deelnemers). Namen bijwerken gebeurt rechtstreeks in `index.html`.
+- Tandwiel rechtsboven: afwezigen afvinken, bewaard in localStorage (`lunchrad-afwezig`). Geluid: tik bij draaien, casino-belletjes per winnaar, trompetfanfare bij de finale (alles Web Audio, geen bestanden).
+- Laatst bijgewerkt 21 augustus 2026 (45 namen, huisstijl, geluid, aanwezigheidspaneel). Namen bijwerken gebeurt rechtstreeks in `index.html`.
 - Er bestaat ook `tkk-rad/`, een veel uitgebreidere Next.js-versie van hetzelfde idee.
