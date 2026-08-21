@@ -1393,11 +1393,12 @@ function launchConfetti(duration = 14000, onlyImages = null, count = 160) {
     const ci = Math.floor(Math.random() * colors.length);
     const base = {
       x, y,
-      vx: dx * 0.08 + (Math.random() - 0.5) * 1.6,
-      vy: dy * 0.08 + (Math.random() - 0.5) * 1.6 - 0.4,
+      // rustig: neemt maar een beetje vaart van de muis mee, dwarrelt dan traag neer
+      vx: dx * 0.02 + (Math.random() - 0.5) * 0.5,
+      vy: dy * 0.02 + (Math.random() - 0.5) * 0.5,
       rot: (Math.random() - 0.5) * 0.8,
-      spin: (Math.random() - 0.5) * 0.15,
-      life: 1, decay: 0.018 + Math.random() * 0.012,
+      spin: (Math.random() - 0.5) * 0.04,
+      life: 1, decay: 0.006 + Math.random() * 0.004,
       color: colors[ci]
     };
     if (r < 0.55) {
@@ -1412,13 +1413,13 @@ function launchConfetti(duration = 14000, onlyImages = null, count = 160) {
     ctx2.clearRect(0, 0, canvas.width, canvas.height);
     for (let i = parts.length - 1; i >= 0; i--) {
       const p = parts[i];
-      p.x += p.vx; p.y += p.vy; p.vy += 0.04; p.rot += p.spin; p.life -= p.decay;
+      p.x += p.vx; p.y += p.vy; p.vy += 0.012; p.vx *= 0.985; p.rot += p.spin; p.life -= p.decay;
       if (p.life <= 0) { parts.splice(i, 1); continue; }
       ctx2.save();
       ctx2.translate(p.x, p.y);
       ctx2.rotate(p.rot);
       ctx2.globalAlpha = Math.max(0, p.life);
-      const sc = 0.6 + 0.4 * p.life;
+      const sc = 0.75 + 0.25 * p.life;
       if (p.img.complete && p.img.naturalWidth) {
         const w = p.w * sc, h = w * (p.img.naturalHeight / p.img.naturalWidth);
         ctx2.drawImage(p.img, -w / 2, -h / 2, w, h);
@@ -1432,9 +1433,9 @@ function launchConfetti(duration = 14000, onlyImages = null, count = 160) {
     if (lastX !== null) {
       const dx = e.clientX - lastX, dy = e.clientY - lastY;
       const dist = Math.hypot(dx, dy);
-      if (dist < 10) return;
-      // hoe sneller je beweegt, hoe meer er afvalt
-      const n = Math.min(4, 1 + Math.floor(dist / 30));
+      if (dist < 18) return;
+      // hoe sneller je beweegt, hoe meer er afvalt (maar nooit een wolk)
+      const n = Math.min(2, 1 + Math.floor(dist / 60));
       for (let i = 0; i < n; i++) spawn(lastX + dx * (i / n), lastY + dy * (i / n), dx, dy);
     }
     lastX = e.clientX; lastY = e.clientY;
