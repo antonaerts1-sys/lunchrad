@@ -19,8 +19,19 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 40px 16px;
+    padding: 24px 16px;
     overflow-x: hidden;
+  }
+  @media (max-height: 760px) {
+    body { padding-top: 14px; }
+    .logo { height: 48px; margin-bottom: 12px; }
+    h1 { font-size: 44px; }
+    .subtitle { margin-bottom: 18px; }
+    :root { --wheel: min(540px, 92vw, calc(100vh - 250px)); }
+  }
+  @media (max-width: 520px) {
+    h1 { font-size: 40px; }
+    .center-circle { width: 56px; height: 56px; font-size: 10px; }
   }
 
   .logo {
@@ -50,16 +61,20 @@
     opacity: 0.5;
   }
 
+  /* Rad schaalt mee: nooit breder dan het scherm, nooit hoger dan wat er onder de titel overblijft */
+  :root { --wheel: min(540px, 92vw, calc(100vh - 330px)); }
   .wheel-container {
     position: relative;
-    width: 540px;
-    height: 540px;
-    margin-bottom: 32px;
+    width: var(--wheel);
+    height: var(--wheel);
+    min-width: 260px; min-height: 260px;
+    margin-bottom: 24px;
   }
 
   canvas#wheel {
-    width: 540px;
-    height: 540px;
+    width: 100%;
+    height: 100%;
+    display: block;
     filter: drop-shadow(0 12px 40px rgba(0, 0, 0, 0.12));
   }
 
@@ -337,109 +352,109 @@
   }
 
   /* ===== FINALE OVERLAY ===== */
+  /* ===== SLOTSCHERM: vol TKK-kleurvlak ===== */
   .finale-overlay {
-    position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background: #000;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
+    position: fixed; inset: 0;
+    background: #3391FF;
+    color: #000;
     z-index: 50;
-    opacity: 0;
-    pointer-events: none;
-    overflow: hidden;
+    opacity: 0; pointer-events: none; overflow: hidden;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    clip-path: circle(0% at 50% 50%);
   }
-
   .finale-overlay.active {
-    opacity: 1;
-    pointer-events: auto;
-    animation: finaleIn 0.6s ease forwards;
+    opacity: 1; pointer-events: auto;
+    animation: finaleWipe 0.9s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+  @keyframes finaleWipe {
+    0% { clip-path: circle(0% at 50% 50%); }
+    100% { clip-path: circle(150% at 50% 50%); }
+  }
+  .finale-logo {
+    position: absolute; top: 32px; left: 50%; transform: translateX(-50%);
+    height: 64px; width: auto;
+    animation: finaleDrop 0.7s 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  }
+  @keyframes finaleDrop {
+    0% { opacity: 0; transform: translateX(-50%) translateY(-80px) rotate(-6deg); }
+    100% { opacity: 1; transform: translateX(-50%) translateY(0) rotate(0); }
+  }
+  .finale-kicker {
+    font-family: 'GTFlexa', sans-serif; font-size: 18px; margin-bottom: 18px;
+    animation: finaleUp 0.6s 0.9s ease both;
+  }
+  .finale-names {
+    display: flex; flex-direction: column; align-items: center; gap: 0;
+    text-align: center;
+  }
+  .finale-name {
+    font-family: 'GTFlexa Condensed', 'GTFlexa', sans-serif; text-transform: uppercase;
+    font-size: clamp(64px, 14vw, 180px); line-height: 0.85; letter-spacing: -0.01em;
+    overflow: hidden; padding: 0 0.05em;
+  }
+  .finale-name span {
+    display: block;
+    animation: finaleRise 0.9s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+  .finale-name:nth-child(1) span { animation-delay: 1.0s; }
+  .finale-name:nth-child(3) span { animation-delay: 1.35s; }
+  @keyframes finaleRise {
+    0% { transform: translateY(110%) rotate(3deg); }
+    100% { transform: translateY(0) rotate(0); }
+  }
+  .finale-amp {
+    width: 84px; height: 84px; border-radius: 50%;
+    background: #FC470F; border: 2px solid #000;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'GTFlexa Condensed', 'GTFlexa', sans-serif; font-size: 52px; line-height: 1;
+    margin: 10px 0; transform: rotate(-8deg);
+    animation: finalePop 0.5s 1.25s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  }
+  @keyframes finalePop {
+    0% { opacity: 0; transform: scale(0) rotate(-60deg); }
+    100% { opacity: 1; transform: scale(1) rotate(-8deg); }
+  }
+  .finale-foot {
+    display: flex; align-items: center; gap: 18px; margin-top: 40px;
+    font-family: 'GTFlexa Condensed', 'GTFlexa', sans-serif; text-transform: uppercase; font-size: 26px;
+    animation: finaleUp 0.6s 1.9s ease both;
+  }
+  .finale-foot svg { width: 44px; height: auto; }
+  .finale-btn {
+    background: transparent; border: 1px solid #000; border-radius: 9999px; padding: 14px 26px;
+    font-family: 'GTFlexa Condensed', 'GTFlexa', sans-serif; text-transform: uppercase; font-size: 22px;
+    color: #000; cursor: pointer; display: inline-flex; align-items: center; gap: 12px;
+    transition: all 0.2s ease-in-out;
+  }
+  .finale-btn svg { width: 29px; height: 14px; transition: transform 0.2s ease-in-out; }
+  .finale-btn:hover { background: #000; color: #fff; }
+  .finale-btn:hover svg path { fill: #fff; }
+  .finale-btn:hover svg { transform: translateX(25%); }
+  .finale-sticker {
+    position: absolute; width: 150px; height: 150px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center; text-align: center;
+    font-family: 'GTFlexa Condensed', 'GTFlexa', sans-serif; text-transform: uppercase;
+    font-size: 26px; line-height: 0.9; border: 2px solid #000; padding: 16px;
+    animation: finalePopSticker 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  }
+  .finale-sticker.one { left: 6vw; top: 18vh; background: #E80094; transform: rotate(-12deg); animation-delay: 1.6s; }
+  .finale-sticker.two { right: 6vw; bottom: 14vh; background: #00B800; transform: rotate(10deg); animation-delay: 1.8s; }
+  @keyframes finalePopSticker {
+    0% { opacity: 0; scale: 0; }
+    100% { opacity: 1; scale: 1; }
+  }
+  @keyframes finaleUp {
+    0% { opacity: 0; transform: translateY(24px); }
+    100% { opacity: 1; transform: translateY(0); }
+  }
+  @media (max-width: 700px) {
+    .finale-sticker { width: 100px; height: 100px; font-size: 18px; }
+    .finale-foot { flex-direction: column; gap: 12px; font-size: 20px; }
   }
 
-  .finale-overlay .finale-label {
-    font-size: 16px;
-    font-family: 'GTFlexa Condensed', 'GTFlexa', sans-serif; font-weight: 400;
-    text-transform: uppercase;
-    letter-spacing: 6px;
-    color: #fff;
-    opacity: 0;
-    margin-bottom: 40px;
-    animation: finaleFadeUp 0.6s 0.8s ease both;
-  }
-
-  .finale-overlay .finale-names {
-    display: flex;
-    align-items: center;
-    gap: 32px;
-  }
-
-  .finale-overlay .finale-name {
-    font-size: 72px;
-    font-family: 'GTFlexa Condensed', 'GTFlexa', sans-serif; font-weight: 400;
-    text-transform: uppercase;
-    letter-spacing: -1px;
-    line-height: 1;
-    padding: 16px 40px;
-    border-radius: 24px;
-    opacity: 0;
-  }
-
-  .finale-overlay .finale-name:nth-child(1) {
-    background: #00B800;
-    color: #000;
-    animation: flyInLeft 0.8s 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
-  }
-
-  .finale-overlay .finale-amp {
-    font-size: 56px;
-    font-family: 'GTFlexa Condensed', 'GTFlexa', sans-serif; font-weight: 400;
-    color: #fff;
-    opacity: 0;
-    animation: ampPop 0.5s 0.9s cubic-bezier(0.34, 1.56, 0.64, 1) both;
-  }
-
-  .finale-overlay .finale-name:nth-child(3) {
-    background: #FC470F;
-    color: #000;
-    animation: flyInRight 0.8s 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
-  }
-
-  .finale-overlay .finale-sub {
-    font-size: 20px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 3px;
-    color: #fff;
-    opacity: 0;
-    margin-top: 40px;
-    animation: finaleFadeUp 0.6s 1.2s ease both;
-  }
-
-  @keyframes finaleIn {
-    0% { opacity: 0; }
-    100% { opacity: 1; }
-  }
-
-  @keyframes flyInLeft {
-    0% { opacity: 0; transform: translateX(-120vw) rotate(-8deg); }
-    100% { opacity: 1; transform: translateX(0) rotate(0deg); }
-  }
-
-  @keyframes flyInRight {
-    0% { opacity: 0; transform: translateX(120vw) rotate(8deg); }
-    100% { opacity: 1; transform: translateX(0) rotate(0deg); }
-  }
-
-  @keyframes ampPop {
-    0% { opacity: 0; transform: scale(0); }
-    70% { transform: scale(1.3); }
-    100% { opacity: 0.35; transform: scale(1); }
-  }
-
-  @keyframes finaleFadeUp {
-    0% { opacity: 0; transform: translateY(20px); }
-    100% { opacity: 0.35; transform: translateY(0); }
+  /* ===== Muisspoor ===== */
+  .trail-canvas {
+    position: fixed; inset: 0; pointer-events: none; z-index: 300;
   }
 
   .confetti-canvas {
@@ -513,13 +528,35 @@
 </div>
 
 <div class="finale-overlay" id="finaleOverlay">
-  <div class="finale-label">Lunch van de Maand</div>
+  <svg class="finale-logo" role="img" aria-label="The Kind Kids" width="265" height="77" viewBox="0 0 265 77" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M47.2752 25.5912V30.601H40.8947V51.554H35.5162V30.601H29.1357V25.5912H47.2672H47.2752Z" fill="black"></path>
+<path d="M61.4069 25.5912H66.7854V51.546H61.4069V41.0534H53.8401V51.546H48.4615V25.5912H53.8401V36.0517H61.4069V25.5912Z" fill="black"></path>
+<path d="M69.8714 51.546V25.5912H83.8507V30.601H75.2499V36.1238H83.482V40.9813H75.2499V46.5442H83.8507V51.554H69.8714V51.546Z" fill="black"></path>
+<path d="M111.777 25.5912L104.435 37.5346L111.593 51.554H105.477L100.66 41.7268L98.6958 44.9891V51.554H93.3173V25.5992H98.6958V34.8653L97.285 38.5365H98.0305L105.894 25.5992H111.785L111.777 25.5912Z" fill="black"></path>
+<path d="M112.964 51.546V25.5912H118.342V51.546H112.964Z" fill="black"></path>
+<path d="M121.396 51.546V25.5912H129.292L133.74 40.2759L134.149 48.0271H134.927V25.5912H139.712V51.546H131.817L127.328 36.8212L126.959 29.1101H126.214V51.546H121.396Z" fill="black"></path>
+<path d="M142.806 51.546V25.5912H151.222C155.968 25.5912 159.23 27.8516 160.681 31.9316C161.346 33.7832 161.643 36.1238 161.643 38.5686C161.643 41.0134 161.346 43.3539 160.681 45.2056C159.238 49.2855 155.976 51.546 151.222 51.546H142.806ZM148.185 46.5442H151.295C153.258 46.5442 154.709 45.3579 155.415 43.3539C155.856 42.0955 156.048 40.2759 156.048 38.5686C156.048 36.8612 155.864 35.0497 155.415 33.7832C154.709 31.7793 153.266 30.593 151.295 30.593H148.185V46.5362V46.5442Z" fill="black"></path>
+<path d="M189.377 25.5912L182.035 37.5346L189.193 51.554H183.077L178.259 41.7268L176.296 44.9891V51.554H170.917V25.5992H176.296V34.8653L174.885 38.5365H175.63L183.494 25.5992H189.385L189.377 25.5912Z" fill="black"></path>
+<path d="M190.572 51.546V25.5912H195.95V51.546H190.572Z" fill="black"></path>
+<path d="M199.004 51.546V25.5912H207.421C212.166 25.5912 215.428 27.8516 216.879 31.9316C217.544 33.7832 217.841 36.1238 217.841 38.5686C217.841 41.0134 217.544 43.3539 216.879 45.2056C215.436 49.2855 212.174 51.546 207.421 51.546H199.004ZM204.383 46.5442H207.493C209.457 46.5442 210.907 45.3579 211.613 43.3539C212.062 42.0955 212.246 40.2759 212.246 38.5686C212.246 36.8612 212.062 35.0497 211.613 33.7832C210.907 31.7793 209.465 30.593 207.493 30.593H204.383V46.5362V46.5442Z" fill="black"></path>
+<path d="M218.683 44.2035V43.0894H224.021V44.1314C224.021 46.3598 225.095 47.4659 227.059 47.4659C228.285 47.4659 229.135 47.0571 229.584 46.2796C229.88 45.7987 230.033 45.2376 230.033 44.5402C230.033 43.8749 229.961 43.3138 229.664 42.8329C229.255 42.1996 228.518 41.6465 227.219 41.2778L224.253 40.348C222.249 39.7548 220.807 38.7529 219.949 37.2299C219.244 36.0436 218.947 34.6729 218.947 32.9655C218.947 31.2582 219.316 29.7352 220.021 28.5169C221.32 26.2564 223.837 24.9579 227.323 24.9579C232.63 24.9579 235.628 27.6992 235.628 32.8533V33.9675H230.289V32.9255C230.289 30.7372 229.247 29.6631 227.323 29.6631C226.097 29.6631 225.247 30.0719 224.798 30.8494C224.542 31.3303 224.39 31.8914 224.39 32.5888C224.39 33.222 224.462 33.7751 224.726 34.224C225.135 34.8893 225.873 35.4103 227.171 35.7791L230.097 36.7409C232.133 37.294 233.584 38.3761 234.473 39.8911C235.139 41.0774 235.435 42.4882 235.435 44.1554C235.435 45.8227 235.099 47.4178 234.401 48.6042C233.063 50.9047 230.546 52.1631 227.019 52.1631C221.712 52.1631 218.674 49.3817 218.674 44.1875L218.683 44.2035Z" fill="black"></path>
+<path d="M132.386 76.6671C94.7682 76.6671 62.8738 73.6532 40.1493 67.946C13.93 61.3651 0.640015 51.4818 0.640015 38.5685C0.640015 5.42366 83.1855 0.469971 132.394 0.469971C171.55 0.469971 202.579 3.16324 224.614 8.46962C250.85 14.786 264.148 24.9178 264.148 38.5685C264.148 71.7134 181.602 76.6671 132.394 76.6671H132.386ZM132.386 4.45377C94.6079 4.45377 63.0421 7.30734 41.1032 12.7019C16.8878 18.6576 4.61579 27.3626 4.61579 38.5605C4.61579 59.6017 53.5756 72.6752 132.386 72.6752C211.196 72.6752 260.156 60.2429 260.156 38.5605C260.156 16.8781 214.779 4.44574 132.386 4.44574V4.45377Z" fill="black"></path>
+</svg>
+  <div class="finale-sticker one">Lunch<br>van de<br>maand</div>
+  <div class="finale-sticker two">Kind is<br>the new<br>cool</div>
+  <div class="finale-kicker" id="finaleKicker">De lunch van deze maand is voor</div>
   <div class="finale-names">
-    <div class="finale-name" id="finaleName1"></div>
-    <div class="finale-amp">&</div>
-    <div class="finale-name" id="finaleName2"></div>
+    <div class="finale-name"><span id="finaleName1"></span></div>
+    <div class="finale-amp">&amp;</div>
+    <div class="finale-name"><span id="finaleName2"></span></div>
   </div>
-  <div class="finale-sub">Geniet ervan</div>
+  <div class="finale-foot">
+    <span>Smakelijk</span>
+    <svg viewBox="0 0 29 14" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M27.1102 5.87437C24.3923 5.87437 21.9151 3.65336 21.9151 1.21436V0.214355H19.6855V1.21436C19.6855 2.98836 20.5528 4.65236 21.914 5.87437H0.354614V7.87437H21.914C20.5528 9.09637 19.6855 10.7604 19.6855 12.5344V13.5344H21.9151V12.5344C21.9151 10.0954 24.3923 7.87437 27.1102 7.87437H28.225V5.87437H27.1102Z" fill="black"/></svg>
+    <button class="finale-btn" onclick="resetWheel()">Opnieuw draaien <svg viewBox="0 0 29 14" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M27.1102 5.87437C24.3923 5.87437 21.9151 3.65336 21.9151 1.21436V0.214355H19.6855V1.21436C19.6855 2.98836 20.5528 4.65236 21.914 5.87437H0.354614V7.87437H21.914C20.5528 9.09637 19.6855 10.7604 19.6855 12.5344V13.5344H21.9151V12.5344C21.9151 10.0954 24.3923 7.87437 27.1102 7.87437H28.225V5.87437H27.1102Z" fill="black"/></svg></button>
+  </div>
+</div>
+<canvas class="trail-canvas" id="trail"></canvas>
 </div>
 
 <canvas class="confetti-canvas" id="confetti"></canvas>
@@ -1058,26 +1095,19 @@ function showFinale(name1, name2) {
     playFanfare(t + 2.1);       // ...en dan de trompet, net voor het koor wegsterft
   }
   const finale = document.getElementById('finaleOverlay');
-
-  // Reset animations by removing and re-adding class
   finale.classList.remove('active');
-  const n1 = document.getElementById('finaleName1');
-  const n2 = document.getElementById('finaleName2');
-  const amp = document.querySelector('.finale-amp');
-  const label = document.querySelector('.finale-label');
-  const sub = document.querySelector('.finale-sub');
-
-  // Force animation restart
-  [n1, n2, amp, label, sub].forEach(el => {
+  // animaties opnieuw laten starten
+  finale.querySelectorAll('.finale-logo, .finale-kicker, .finale-name span, .finale-amp, .finale-foot, .finale-sticker').forEach(el => {
     el.style.animation = 'none';
     void el.offsetHeight;
     el.style.animation = '';
   });
-
-  n1.textContent = name1.toUpperCase();
-  n2.textContent = name2.toUpperCase();
+  const maanden = ['januari','februari','maart','april','mei','juni','juli','augustus','september','oktober','november','december'];
+  document.getElementById('finaleKicker').textContent = `De lunch van ${maanden[new Date().getMonth()]} is voor`;
+  document.getElementById('finaleName1').textContent = name1.toUpperCase();
+  document.getElementById('finaleName2').textContent = name2.toUpperCase();
   finale.classList.add('active');
-  launchConfetti();
+  launchConfetti(14000);
 
   document.getElementById('spinBtn').style.display = 'none';
   document.getElementById('resetBtn').style.display = 'block';
@@ -1098,6 +1128,7 @@ function showWinner(num, name) {
 }
 
 function resetWheel() {
+  confettiRun++;
   document.getElementById('gearBtn').disabled = false;
   winners = [];
   eliminatedIndex = -1;
@@ -1117,49 +1148,53 @@ function resetWheel() {
 }
 
 // ===== CONFETTI: vallende Kind Kids-logo's =====
-// Het inline logo wordt per merkkleur omgezet naar een afbeelding (zwart, groen, oranjerood, blauw, roze)
+// Het inline logo wordt per kleur omgezet naar een afbeelding (wit, zwart, groen, oranjerood, roze; blauw valt weg op het blauwe slotscherm)
 const confettiLogos = [];
-(function prepareLogoConfetti() {
+const logoSvgRaw = (() => {
   const svgEl = document.querySelector('svg.logo');
-  if (!svgEl) return;
-  const raw = svgEl.outerHTML.replace(/ class="logo"[^>]*?(?=width)/, ' ');
-  ['#FFFFFF', '#00B800', '#FC470F', '#3391FF', '#E80094'].forEach(color => {
-    const svg = raw.replace(/fill="black"/g, `fill="${color}"`);
-    const img = new Image();
-    img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
-    confettiLogos.push(img);
-  });
+  return svgEl ? svgEl.outerHTML.replace(/ class="logo"[^>]*?(?=width)/, ' ') : '';
 })();
+function logoImage(color) {
+  const img = new Image();
+  img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(logoSvgRaw.replace(/fill="black"/g, `fill="${color}"`));
+  return img;
+}
+['#FFFFFF', '#000000', '#00B800', '#FC470F', '#E80094'].forEach(c => confettiLogos.push(logoImage(c)));
 
-function launchConfetti() {
+let confettiRun = 0; // teller: een nieuwe start of een reset stopt de vorige regen
+function launchConfetti(duration = 14000) {
+  const run = ++confettiRun;
   const cCanvas = document.getElementById('confetti');
   cCanvas.width = window.innerWidth;
   cCanvas.height = window.innerHeight;
   const cCtx = cCanvas.getContext('2d');
   const pieces = [];
-  const ratio = 77 / 265; // hoogte/breedte van het logo
+  const ratio = 77 / 265;
+  const startTime = performance.now();
 
-  for (let i = 0; i < 110; i++) {
-    const w = 44 + Math.random() * 40;
-    pieces.push({
+  function newPiece(fromTop) {
+    const w = 40 + Math.random() * 44;
+    return {
       x: Math.random() * cCanvas.width,
-      y: Math.random() * -cCanvas.height,
+      y: fromTop ? -60 - Math.random() * 200 : Math.random() * -cCanvas.height,
       w, h: w * ratio,
       img: confettiLogos[Math.floor(Math.random() * confettiLogos.length)],
-      speed: 1.6 + Math.random() * 3.2,
+      speed: 1.8 + Math.random() * 3.4,
       angle: (Math.random() - 0.5) * 0.8,
       spin: (Math.random() - 0.5) * 0.06,
       drift: (Math.random() - 0.5) * 1.6,
-      flutter: Math.random() * Math.PI * 2,   // fase van het "dwarrelen"
+      flutter: Math.random() * Math.PI * 2,
       flutterSpeed: 0.05 + Math.random() * 0.08,
       opacity: 1
-    });
+    };
   }
+  for (let i = 0; i < 160; i++) pieces.push(newPiece(false));
 
-  let frame = 0;
   function animateConfetti() {
+    if (run !== confettiRun) { cCtx.clearRect(0, 0, cCanvas.width, cCanvas.height); return; }
     cCtx.clearRect(0, 0, cCanvas.width, cCanvas.height);
-    frame++;
+    const elapsed = performance.now() - startTime;
+    const raining = elapsed < duration;
 
     let alive = false;
     pieces.forEach(p => {
@@ -1167,20 +1202,23 @@ function launchConfetti() {
       p.flutter += p.flutterSpeed;
       p.x += p.drift + Math.sin(p.flutter) * 1.2;
       p.angle += p.spin;
-      if (frame > 200) p.opacity -= 0.01;
+      if (p.y > cCanvas.height + 40) {
+        if (raining) Object.assign(p, newPiece(true)); // blijft regenen zolang het slotscherm vers is
+        else p.opacity = 0;
+      }
+      if (!raining) p.opacity -= 0.004;
 
-      if (p.opacity > 0 && p.y < cCanvas.height + 40) {
+      if (p.opacity > 0) {
         alive = true;
         cCtx.save();
         cCtx.translate(p.x, p.y);
         cCtx.rotate(p.angle);
-        // dwarrelen: het logo kantelt om zijn as, alsof het een blaadje papier is
         cCtx.scale(1, Math.max(0.15, Math.abs(Math.cos(p.flutter))));
-        cCtx.globalAlpha = Math.max(0, p.opacity);
+        cCtx.globalAlpha = Math.max(0, Math.min(1, p.opacity));
         if (p.img && p.img.complete && p.img.naturalWidth) {
           cCtx.drawImage(p.img, -p.w / 2, -p.h / 2, p.w, p.h);
         } else {
-          cCtx.fillStyle = '#fff';
+          cCtx.fillStyle = '#000';
           cCtx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
         }
         cCtx.restore();
@@ -1188,10 +1226,80 @@ function launchConfetti() {
     });
 
     if (alive) requestAnimationFrame(animateConfetti);
+    else cCtx.clearRect(0, 0, cCanvas.width, cCanvas.height);
   }
-
   animateConfetti();
 }
+
+// ===== MUISSPOOR: Kind Kids-artefacten achter de cursor =====
+(function mouseTrail() {
+  const canvas = document.getElementById('trail');
+  const ctx2 = canvas.getContext('2d');
+  const arrowSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="29" height="14" viewBox="0 0 29 14" fill="none"><path fill-rule="evenodd" clip-rule="evenodd" d="M27.1102 5.87437C24.3923 5.87437 21.9151 3.65336 21.9151 1.21436V0.214355H19.6855V1.21436C19.6855 2.98836 20.5528 4.65236 21.914 5.87437H0.354614V7.87437H21.914C20.5528 9.09637 19.6855 10.7604 19.6855 12.5344V13.5344H21.9151V12.5344C21.9151 10.0954 24.3923 7.87437 27.1102 7.87437H28.225V5.87437H27.1102Z" fill="COLOR"/></svg>';
+  const colors = ['#00B800', '#FC470F', '#3391FF', '#E80094', '#000000'];
+  const arrows = colors.map(c => { const i = new Image(); i.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(arrowSvg.replace('COLOR', c)); return i; });
+  const logos = colors.map(c => logoImage(c));
+  const parts = [];
+  let lastX = null, lastY = null, running = false;
+
+  function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+  resize();
+  window.addEventListener('resize', resize);
+
+  function spawn(x, y, dx, dy) {
+    const r = Math.random();
+    const ci = Math.floor(Math.random() * colors.length);
+    const base = {
+      x, y,
+      vx: dx * 0.08 + (Math.random() - 0.5) * 1.6,
+      vy: dy * 0.08 + (Math.random() - 0.5) * 1.6 - 0.4,
+      rot: (Math.random() - 0.5) * 0.8,
+      spin: (Math.random() - 0.5) * 0.15,
+      life: 1, decay: 0.018 + Math.random() * 0.012,
+      color: colors[ci]
+    };
+    if (r < 0.4) parts.push({ ...base, kind: 'logo', img: logos[ci], w: 34 + Math.random() * 22 });
+    else if (r < 0.7) parts.push({ ...base, kind: 'sticker', size: 5 + Math.random() * 8 });
+    else parts.push({ ...base, kind: 'arrow', img: arrows[ci], w: 22 + Math.random() * 14 });
+  }
+
+  function tick() {
+    ctx2.clearRect(0, 0, canvas.width, canvas.height);
+    for (let i = parts.length - 1; i >= 0; i--) {
+      const p = parts[i];
+      p.x += p.vx; p.y += p.vy; p.vy += 0.04; p.rot += p.spin; p.life -= p.decay;
+      if (p.life <= 0) { parts.splice(i, 1); continue; }
+      ctx2.save();
+      ctx2.translate(p.x, p.y);
+      ctx2.rotate(p.rot);
+      ctx2.globalAlpha = Math.max(0, p.life);
+      const sc = 0.6 + 0.4 * p.life;
+      if (p.kind === 'sticker') {
+        ctx2.fillStyle = p.color;
+        ctx2.beginPath(); ctx2.arc(0, 0, p.size * sc, 0, Math.PI * 2); ctx2.fill();
+        ctx2.lineWidth = 1; ctx2.strokeStyle = '#000'; ctx2.stroke();
+      } else if (p.img.complete && p.img.naturalWidth) {
+        const w = p.w * sc, h = w * (p.img.naturalHeight / p.img.naturalWidth);
+        ctx2.drawImage(p.img, -w / 2, -h / 2, w, h);
+      }
+      ctx2.restore();
+    }
+    if (parts.length) requestAnimationFrame(tick); else running = false;
+  }
+
+  window.addEventListener('mousemove', e => {
+    if (lastX !== null) {
+      const dx = e.clientX - lastX, dy = e.clientY - lastY;
+      const dist = Math.hypot(dx, dy);
+      if (dist < 10) return;
+      // hoe sneller je beweegt, hoe meer er afvalt
+      const n = Math.min(4, 1 + Math.floor(dist / 30));
+      for (let i = 0; i < n; i++) spawn(lastX + dx * (i / n), lastY + dy * (i / n), dx, dy);
+    }
+    lastX = e.clientX; lastY = e.clientY;
+    if (!running) { running = true; requestAnimationFrame(tick); }
+  });
+})();
 
 // Init
 document.fonts.ready.then(drawWheel);
