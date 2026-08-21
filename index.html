@@ -929,6 +929,8 @@ function spin() {
   if (spinning) return;
   initAudio();
   toggleSettings(false);
+  window.hasSpunOnce = true;
+  document.getElementById('flashLayer').innerHTML = '';
   spinning = true;
   document.getElementById('gearBtn').disabled = true;
   document.getElementById('spinBtn').disabled = true;
@@ -1406,7 +1408,9 @@ function launchConfetti(duration = 14000, onlyImages = null, count = 160) {
 
   function idle() {
     // enkel op het beginscherm, en enkel als er witte marge naast het rad is
+    // enkel vóór de allereerste trek van de sessie; daarna blijven ze weg, ook na "Opnieuw draaien"
     return !document.hidden
+      && !window.hasSpunOnce
       && !document.querySelector('.finale-overlay.active, .winner-overlay.active, .settings-panel.open')
       && window.innerWidth >= 900;
   }
