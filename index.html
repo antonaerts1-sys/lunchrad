@@ -322,39 +322,45 @@
 
   .winner-overlay .overlay-label {
     position: relative;
-    font-size: 18px;
-    font-family: 'GTFlexa Condensed', 'GTFlexa', sans-serif; font-weight: 400;
-    text-transform: uppercase;
-    letter-spacing: 6px;
-    color: #000;
-    opacity: 0.4;
-    margin-bottom: 16px;
-    animation: revealUp 0.5s 0.2s cubic-bezier(0.16, 1, 0.3, 1) both;
+    font-family: 'GTFlexa Condensed', 'GTFlexa', sans-serif; text-transform: uppercase;
+    font-size: 22px; letter-spacing: 0.12em; color: #000;
+    margin-bottom: 10px;
+    animation: revealUp 0.5s 0.15s cubic-bezier(0.16, 1, 0.3, 1) both;
   }
-
   .winner-overlay .overlay-name {
-    position: relative;
-    font-size: 100px;
-    font-family: 'GTFlexa Condensed', 'GTFlexa', sans-serif; font-weight: 400;
-    text-transform: uppercase;
-    letter-spacing: -2px;
-    color: #000;
-    line-height: 1;
-    animation: nameBounceIn 0.7s 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    position: relative; overflow: hidden; padding: 0 0.06em;
+    font-family: 'GTFlexa Condensed', 'GTFlexa', sans-serif; text-transform: uppercase;
+    font-size: clamp(80px, 17vw, 220px); line-height: 0.85; color: #000; text-align: center;
   }
-
+  .winner-overlay .overlay-name span {
+    display: block;
+    animation: nameRise 0.8s 0.25s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+  @keyframes nameRise {
+    0% { transform: translateY(110%) rotate(2deg); }
+    100% { transform: translateY(0) rotate(0); }
+  }
+  .winner-overlay .overlay-applause {
+    position: relative;
+    font-family: 'GTFlexa Condensed', 'GTFlexa', sans-serif; text-transform: uppercase;
+    font-size: clamp(28px, 4.5vw, 56px); line-height: 0.9; color: #000; text-align: center;
+    margin-top: 28px;
+    animation: applauseIn 0.6s 1.5s cubic-bezier(0.34, 1.56, 0.64, 1) both, applauseClap 0.5s 2.1s ease-in-out 4;
+  }
+  @keyframes applauseIn {
+    0% { opacity: 0; transform: scale(0.4) rotate(-4deg); }
+    100% { opacity: 1; transform: scale(1) rotate(0); }
+  }
+  @keyframes applauseClap {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.08); }
+  }
   .winner-overlay .overlay-sub {
     position: relative;
-    font-size: 18px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    color: #000;
-    opacity: 0.35;
-    margin-top: 20px;
-    animation: revealUp 0.4s 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+    font-family: 'GTFlexa', sans-serif; font-size: 17px; color: #000; opacity: 0.6;
+    margin-top: 36px;
+    animation: revealUp 0.5s 2.2s cubic-bezier(0.16, 1, 0.3, 1) both;
   }
-
   @keyframes overlayFadeIn {
     0% { opacity: 0; }
     100% { opacity: 1; }
@@ -365,16 +371,10 @@
     100% { opacity: 0; }
   }
 
-  @keyframes nameBounceIn {
-    0% { opacity: 0; transform: scale(0.3) translateY(40px); }
-    60% { opacity: 1; transform: scale(1.08) translateY(-5px); }
-    80% { transform: scale(0.96) translateY(2px); }
-    100% { opacity: 1; transform: scale(1) translateY(0); }
-  }
 
   @keyframes revealUp {
     0% { opacity: 0; transform: translateY(20px); }
-    100% { opacity: 0.4; transform: translateY(0); }
+    100% { transform: translateY(0); }
   }
 
   /* ===== FINALE OVERLAY ===== */
@@ -553,7 +553,8 @@
   <div class="winner-overlay" id="winnerOverlay">
     <div class="overlay-bg"></div>
     <div class="overlay-label">Winnaar 1</div>
-    <div class="overlay-name" id="overlayName"></div>
+    <div class="overlay-name"><span id="overlayName"></span></div>
+    <div class="overlay-applause" id="overlayApplause"></div>
     <div class="overlay-sub">Nog 1 te gaan</div>
   </div>
 </div>
@@ -1100,18 +1101,16 @@ function showWinnerOverlay(name, onDone, colorClass, labelText, subText) {
   const overlaySub = document.querySelector('.winner-overlay .overlay-sub');
 
   overlayName.textContent = name.toUpperCase();
+  document.getElementById('overlayApplause').textContent = `Applaus voor ${name.toUpperCase()}`;
   overlayLabel.textContent = labelText || 'Winnaar 1';
   overlaySub.textContent = subText !== undefined ? subText : 'Nog 1 te gaan';
   overlaySub.style.display = subText === '' ? 'none' : 'block';
 
   // Force re-trigger animations by cloning inner elements
-  overlayLabel.style.animation = 'none';
-  overlayName.style.animation = 'none';
-  overlaySub.style.animation = 'none';
+  const applause = document.getElementById('overlayApplause');
+  [overlayLabel, overlayName, applause, overlaySub].forEach(el => { el.style.animation = 'none'; });
   void overlayLabel.offsetHeight; // reflow
-  overlayLabel.style.animation = '';
-  overlayName.style.animation = '';
-  overlaySub.style.animation = '';
+  [overlayLabel, overlayName, applause, overlaySub].forEach(el => { el.style.animation = ''; });
 
   overlay.classList.remove('orange', 'fade-out');
   if (colorClass) overlay.classList.add(colorClass);
@@ -1129,7 +1128,7 @@ function showWinnerOverlay(name, onDone, colorClass, labelText, subText) {
       overlay.style.opacity = '0';
       if (onDone) onDone();
     }, 500);
-  }, 2800);
+  }, 4600);
 }
 
 // ===== FINALE =====
@@ -1310,7 +1309,7 @@ KRIBBEL_NAMES.forEach(n => confettiColors.forEach(c => confettiKribbels.push(kri
 let confettiRun = 0; // teller: een nieuwe start of een reset stopt de vorige regen
 // Regen van één kribbel (bv. enkel bloemen of enkel hartjes) bij een winnaar
 const kribbelRainImages = {};
-function launchKribbelRain(name, duration = 3200) {
+function launchKribbelRain(name, duration = 4400) {
   if (!kribbelRainImages[name]) {
     kribbelRainImages[name] = ['#000000', '#00B800', '#FC470F', '#3391FF', '#E80094'].map(c => kribbelImage(name, c));
   }
