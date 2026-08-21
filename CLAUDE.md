@@ -14,6 +14,6 @@ Open `index.html` in de browser.
 
 ## Staat
 - Werkend, gebruikt eindproduct, geen experiment.
-- Tandwiel rechtsboven: afwezigen afvinken, bewaard in localStorage (`lunchrad-afwezig`). Geluid: tik bij draaien, casino-belletjes per winnaar, koor "aaah" gevolgd door trompetfanfare bij de finale (alles Web Audio, geen bestanden).
+- Tandwiel rechtsboven: afwezigen afvinken, bewaard in localStorage (`lunchrad-afwezig`). Confetti bij de finale = dwarrelende TKK-logo's in de merkkleuren (gegenereerd uit het inline SVG). Geluid: tik bij draaien, casino-belletjes per winnaar, koor "aaah" gevolgd door trompetfanfare bij de finale (alles Web Audio, geen bestanden).
 - Laatst bijgewerkt 21 augustus 2026 (45 namen, huisstijl, geluid, aanwezigheidspaneel). Namen bijwerken gebeurt rechtstreeks in `index.html`.
 - Er bestaat ook `tkk-rad/`, een veel uitgebreidere Next.js-versie van hetzelfde idee.
