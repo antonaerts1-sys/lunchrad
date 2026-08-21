@@ -497,6 +497,13 @@
     100% { opacity: 0; transform: translate(var(--x1), var(--y1)) rotate(var(--a)) scale(1); }
   }
 
+  /* slotscherm: zee van bonzende hartjes zodra de confetti gezakt is, nooit over de tekst */
+  .finale-hearts { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
+  .finale-hearts .interlude-heart { color: #FC470F; }
+  .finale-hearts { z-index: 0; }
+  .finale-names, .finale-foot { position: relative; z-index: 1; }
+  .finale-logo { z-index: 1; }
+
   /* ===== Tussenakte: de commentator (na winnaar 2, voor het slotscherm) ===== */
   .interlude {
     position: fixed; inset: 0; background: #fff; z-index: 65;
@@ -637,6 +644,7 @@
 </svg></footer>
 
 <div class="finale-overlay" id="finaleOverlay">
+  <div class="finale-hearts" id="finaleHearts" aria-hidden="true"></div>
   <svg class="finale-logo" role="img" aria-label="The Kind Kids" width="265" height="77" viewBox="0 0 265 77" fill="none" xmlns="http://www.w3.org/2000/svg">
 <path d="M47.2752 25.5912V30.601H40.8947V51.554H35.5162V30.601H29.1357V25.5912H47.2672H47.2752Z" fill="black"></path>
 <path d="M61.4069 25.5912H66.7854V51.546H61.4069V41.0534H53.8401V51.546H48.4615V25.5912H53.8401V36.0517H61.4069V25.5912Z" fill="black"></path>
@@ -1365,7 +1373,35 @@ function playFanfare(startAt) {
   [261.63, 329.63, 392.0].forEach(f => playBrass(f, chordStart, 1.1, 0.09));
 }
 
+function showFinaleHearts() {
+  const finale = document.getElementById('finaleOverlay');
+  if (!finale.classList.contains('active')) return;
+  const layer = document.getElementById('finaleHearts');
+  layer.innerHTML = '';
+  // zones waar geen hart mag: logo, namen, voettekst (met marge)
+  const keepOut = ['.finale-logo', '.finale-names', '.finale-foot'].map(sel => {
+    const r = finale.querySelector(sel).getBoundingClientRect();
+    return { l: r.left - 24, t: r.top - 24, r: r.right + 24, b: r.bottom + 24 };
+  });
+  const W = window.innerWidth, H = window.innerHeight;
+  const placed = [];
+  let tries = 0;
+  while (placed.length < 64 && tries < 3000) {
+    tries++;
+    const w = 34 + Math.random() * 46, h = w * 1.78;
+    const x = Math.random() * (W - w), y = Math.random() * (H - h);
+    const cx = x + w / 2, cy = y + h / 2;
+    if (keepOut.some(k => cx > k.l && cx < k.r && cy > k.t && cy < k.b)) continue;
+    if (placed.some(p => Math.hypot(p.cx - cx, p.cy - cy) < (p.w + w) * 0.55)) continue; // niet op elkaar
+    placed.push({ x, y, w, cx, cy });
+  }
+  layer.innerHTML = placed.map((p, i) =>
+    `<span class="interlude-heart" style="left:${p.x}px;top:${p.y}px;--w:${p.w}px;--r:${((Math.random() - 0.5) * 40).toFixed(0)}deg;--d:${(0.9 + Math.random() * 0.5).toFixed(2)}s;--delay:${(i * 0.05).toFixed(2)}s">${KRIBBELS.hart}</span>`
+  ).join('');
+}
+
 function showFinale(name1, name2, choirAlreadyPlayed) {
+  document.getElementById('finaleHearts').innerHTML = '';
   if (audioCtx) {
     const t = audioCtx.currentTime + 0.1;
     if (choirAlreadyPlayed) {
@@ -1386,7 +1422,7 @@ function showFinale(name1, name2, choirAlreadyPlayed) {
   document.getElementById('finaleName1').textContent = name1.toUpperCase();
   document.getElementById('finaleName2').textContent = name2.toUpperCase();
   finale.classList.add('active');
-  launchConfetti(14000, finaleConfetti, 160);
+  launchConfetti(14000, finaleConfetti, 160, showFinaleHearts);
 
   document.getElementById('spinBtn').style.display = 'none';
   document.getElementById('resetBtn').style.display = 'block';
@@ -1405,6 +1441,7 @@ function showWinner(num, name) {
 
 function resetWheel() {
   confettiRun++;
+  document.getElementById('finaleHearts').innerHTML = '';
   interludeTimers.forEach(clearTimeout); interludeTimers = []; interludeDone = null;
   document.getElementById('interlude').classList.remove('active');
   document.getElementById('gearBtn').disabled = false;
@@ -1462,7 +1499,7 @@ function launchKribbelRain(name, duration = 4400) {
   }
   launchConfetti(duration, kribbelRainImages[name], 90);
 }
-function launchConfetti(duration = 14000, onlyImages = null, count = 160) {
+function launchConfetti(duration = 14000, onlyImages = null, count = 160, onEnd = null) {
   const run = ++confettiRun;
   const cCanvas = document.getElementById('confetti');
   cCanvas.width = window.innerWidth;
@@ -1529,7 +1566,7 @@ function launchConfetti(duration = 14000, onlyImages = null, count = 160) {
     });
 
     if (alive) requestAnimationFrame(animateConfetti);
-    else cCtx.clearRect(0, 0, cCanvas.width, cCanvas.height);
+    else { cCtx.clearRect(0, 0, cCanvas.width, cCanvas.height); if (onEnd && run === confettiRun) onEnd(); }
   }
   animateConfetti();
 }
