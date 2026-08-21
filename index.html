@@ -918,6 +918,89 @@ function playJackpot(big = false) {
   }
 }
 
+function showWinnerOverlay(name, onDone, colorClass, labelText, subText) {
+  const overlay = document.getElementById('winnerOverlay');
+  const overlayName = document.getElementById('overlayName');
+  const overlayLabel = document.querySelector('.winner-overlay .overlay-label');
+  const overlaySub = document.querySelector('.winner-overlay .overlay-sub');
+
+  overlayName.textContent = name.toUpperCase();
+  overlayLabel.textContent = labelText || 'Winnaar 1';
+  overlaySub.textContent = subText !== undefined ? subText : 'Nog 1 te gaan';
+  overlaySub.style.display = subText === '' ? 'none' : 'block';
+
+  // Force re-trigger animations by cloning inner elements
+  overlayLabel.style.animation = 'none';
+  overlayName.style.animation = 'none';
+  overlaySub.style.animation = 'none';
+  void overlayLabel.offsetHeight; // reflow
+  overlayLabel.style.animation = '';
+  overlayName.style.animation = '';
+  overlaySub.style.animation = '';
+
+  overlay.classList.remove('orange', 'fade-out');
+  if (colorClass) overlay.classList.add(colorClass);
+  overlay.style.opacity = '';
+  overlay.classList.add('active');
+  playJackpot(subText === '');
+
+  setTimeout(() => {
+    overlay.classList.remove('active');
+    overlay.classList.add('fade-out');
+
+    setTimeout(() => {
+      overlay.classList.remove('fade-out', 'orange');
+      overlay.style.opacity = '0';
+      if (onDone) onDone();
+    }, 500);
+  }, 2800);
+}
+
+// ===== FINALE =====
+// ===== AUDIO: koor dat "aaah" zingt =====
+// Een klinker ontstaat door formanten: pieken in het spectrum. "Aah" zit rond 750 / 1150 / 2600 Hz.
+function playChoirVoice(freq, t, dur, vol) {
+  const out = audioCtx.createGain();
+  out.gain.setValueAtTime(0, t);
+  out.gain.linearRampToValueAtTime(vol, t + dur * 0.45);      // traag aanzwellen
+  out.gain.setValueAtTime(vol, t + dur * 0.8);
+  out.gain.linearRampToValueAtTime(0, t + dur);
+  out.connect(audioCtx.destination);
+  out.connect(getReverb());
+  const formants = [[750, 1.0, 8], [1150, 0.45, 10], [2600, 0.12, 12]];
+  formants.forEach(([fc, amp, q]) => {
+    const bp = audioCtx.createBiquadFilter();
+    bp.type = 'bandpass';
+    bp.frequency.setValueAtTime(fc, t);
+    bp.Q.setValueAtTime(q, t);
+    const fg = audioCtx.createGain();
+    fg.gain.value = amp;
+    bp.connect(fg).connect(out);
+    // drie zangers per toon, licht uit elkaar, elk met eigen vibrato
+    [-7, 0, 7].forEach(cents => {
+      const osc = audioCtx.createOscillator();
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(freq, t);
+      osc.detune.setValueAtTime(cents, t);
+      const lfo = audioCtx.createOscillator();
+      const lfoGain = audioCtx.createGain();
+      lfo.frequency.setValueAtTime(4.5 + Math.random(), t);
+      lfoGain.gain.setValueAtTime(0, t);
+      lfoGain.gain.linearRampToValueAtTime(9, t + dur * 0.5);
+      lfo.connect(lfoGain).connect(osc.detune);
+      osc.connect(bp);
+      osc.start(t); osc.stop(t + dur + 0.05);
+      lfo.start(t); lfo.stop(t + dur + 0.05);
+    });
+  });
+}
+
+function playChoir(t, dur = 2.4) {
+  // Vierstemmig C-majeur, bas tot sopraan, de hoge stemmen komen iets later binnen
+  [[130.81, 0.0, 0.05], [196.0, 0.1, 0.045], [261.63, 0.2, 0.045], [329.63, 0.35, 0.035], [392.0, 0.5, 0.03]]
+    .forEach(([f, delay, vol]) => playChoirVoice(f, t + delay, dur - delay, vol));
+}
+
 // ===== AUDIO: trompetfanfare bij de finale =====
 function playBrass(freq, t, dur, vol = 0.14) {
   // Koperblazer: twee licht ontstemde zaagtanden door een lowpass die meeopent met de aanslag
@@ -954,9 +1037,9 @@ function playBrass(freq, t, dur, vol = 0.14) {
   });
 }
 
-function playFanfare() {
+function playFanfare(startAt) {
   if (!audioCtx) return;
-  let t = audioCtx.currentTime + 0.1;
+  let t = startAt || (audioCtx.currentTime + 0.1);
   // Ta-ta-ta-TAA, ta-ta-TAAAA (C C C E, C E G)
   const melody = [[523.25, 0.13], [523.25, 0.13], [523.25, 0.13], [659.25, 0.42], [523.25, 0.13], [659.25, 0.13], [783.99, 1.1]];
   melody.forEach(([f, d], i) => {
@@ -969,7 +1052,11 @@ function playFanfare() {
 }
 
 function showFinale(name1, name2) {
-  playFanfare();
+  if (audioCtx) {
+    const t = audioCtx.currentTime + 0.1;
+    playChoir(t, 2.4);          // aaaaaah...
+    playFanfare(t + 2.1);       // ...en dan de trompet, net voor het koor wegsterft
+  }
   const finale = document.getElementById('finaleOverlay');
 
   // Reset animations by removing and re-adding class
