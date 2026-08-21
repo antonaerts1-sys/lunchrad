@@ -4,7 +4,7 @@
 "Lunch van de Maand", een draairad voor The Kind Kids dat bepaalt wie de lunch verzorgt (of wint). Eén statische `index.html` met een canvas-rad met een namenlijst (45 deelnemers sinds 21 augustus 2026), tick-geluiden, pointer bounce, dramatische easing en fullscreen-reveal. Twee spins per trekking; de tweede spin kan niet op een al geëlimineerde persoon landen (fair randomness, zie git log).
 
 ## Stack
-Statische HTML, geen build, geen dependencies. Inter-font via Google Fonts.
+Statische HTML, geen build, geen dependencies. GT Flexa-fonts (TKK-huisstijl) en het TKK-logo zitten als base64/inline SVG in het bestand, geen externe requests.
 
 ## Deployment
 GitHub Pages workflow in `.github/` (sinds 31 maart 2026).
