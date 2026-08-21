@@ -72,6 +72,44 @@
     font-size: 6px; letter-spacing: 0.37px; fill: #000;
   }
   @keyframes ringSpin { to { transform: rotate(360deg); } }
+  /* ===== Hendel (gokkast) rechts van het rad ===== */
+  .lever {
+    position: absolute; top: 50%; right: -76px;
+    width: 64px; height: calc(var(--wheel) * 0.62);
+    transform: translateY(-60%); z-index: 12; touch-action: none; user-select: none;
+  }
+  .lever-base {
+    position: absolute; bottom: 0; left: 50%; transform: translateX(-50%);
+    width: 40px; height: 40px; border-radius: 50%; background: #fff; border: 3px solid #000;
+    box-shadow: inset 0 0 0 6px #000;
+  }
+  .lever-arm {
+    position: absolute; bottom: 20px; left: 50%; width: 14px; height: calc(100% - 20px);
+    background: #000; border-radius: 7px;
+    transform-origin: 50% 100%;
+    transform: translateX(-50%) rotate(var(--pull, 0deg));
+    cursor: grab;
+  }
+  .lever.snapping .lever-arm { transition: transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1); }
+  .lever.dragging .lever-arm { cursor: grabbing; }
+  .lever-knob {
+    position: absolute; top: -26px; left: 50%; transform: translateX(-50%);
+    width: 52px; height: 52px; border-radius: 50%;
+    background: #FC470F; border: 3px solid #000;
+    box-shadow: inset -6px -6px 0 rgba(0,0,0,0.15);
+    transition: background 0.2s;
+  }
+  .lever:hover .lever-knob { background: #ff5a25; }
+  .lever.disabled { opacity: 0.35; }
+  .lever.disabled .lever-arm { cursor: not-allowed; }
+  @media (max-width: 700px) {
+    :root { --wheel: min(520px, 62vw, calc(100vh - 310px)); }
+    .wheel-stage { margin-right: 44px; }
+    .lever { width: 48px; right: -52px; }
+    .lever-knob { width: 40px; height: 40px; top: -20px; }
+    .lever-arm { width: 10px; }
+  }
+
   .site-foot { margin-top: auto; padding: 20px 0 6px; display: flex; justify-content: center; }
   .site-foot .logo { height: 44px; width: auto; margin: 0; }
   .wheel-container {
@@ -127,11 +165,11 @@
   }
 
   .spin-btn {
-    margin-top: 20px;
-    background: #00B800;
+    margin-top: 16px;
+    background: transparent;
     color: #000;
     border: none;
-    padding: 16px 56px;
+    padding: 8px 16px;
     font-family: 'GTFlexa', sans-serif;
     font-size: 18px;
     font-family: 'GTFlexa Condensed', 'GTFlexa', sans-serif; font-weight: 400;
@@ -143,9 +181,9 @@
     margin-bottom: 16px;
   }
 
-  .spin-btn:hover { background: #00a000; transform: scale(1.03); }
+  .spin-btn:hover { opacity: 0.6; }
   .spin-btn:active { transform: scale(0.97); }
-  .spin-btn:disabled { background: #ddd; color: #999; cursor: not-allowed; transform: none; }
+  .spin-btn:disabled { opacity: 0.35; cursor: default; }
 
   .reset-btn {
     background: #000;
@@ -522,6 +560,10 @@
   <defs><path id="ringPath" d="M50,50 m-44,0 a44,44 0 1,1 88,0 a44,44 0 1,1 -88,0"/></defs>
   <text textLength="276.4" lengthAdjust="spacing"><textPath href="#ringPath" startOffset="0" textLength="276.4" lengthAdjust="spacing">Lunch van de maand &#183; 2 winnaars &#183; 1 lunch &#183; Lunch van de maand &#183; 2 winnaars &#183; 1 lunch &#183; </textPath></text>
 </svg>
+<div class="lever" id="lever" title="Trek aan de hendel">
+  <div class="lever-arm" id="leverArm"><div class="lever-knob"></div></div>
+  <div class="lever-base"></div>
+</div>
 <div class="wheel-container">
   <div class="pointer" id="pointer"></div>
   <canvas id="wheel" width="1080" height="1080"></canvas>
@@ -535,7 +577,7 @@
 </div>
 </div>
 
-<button class="spin-btn" id="spinBtn" onclick="spin()">Draai het rad</button>
+<button class="spin-btn" id="spinBtn" onclick="spin()">Trek aan de hendel</button>
 <button class="reset-btn" id="resetBtn" onclick="resetWheel()">Opnieuw</button>
 
 <div class="winners-panel" id="winnersPanel">
@@ -678,6 +720,85 @@ let winners = [];
 let eliminatedIndex = -1;
 let flashIndex = -1;
 let flashPhase = 0;
+
+// ===== HENDEL: trekken = draaien =====
+(function leverControl() {
+  const lever = document.getElementById('lever');
+  const arm = document.getElementById('leverArm');
+  const MAX = 140, TRIGGER = 95; // graden
+  let dragging = false, angle = 0, pivot = null;
+
+  function canPull() {
+    const btn = document.getElementById('spinBtn');
+    return !spinning && !btn.disabled && btn.style.display !== 'none';
+  }
+  function setAngle(a) {
+    angle = Math.max(0, Math.min(MAX, a));
+    arm.style.setProperty('--pull', angle + 'deg');
+  }
+  function angleFor(x, y) {
+    const dx = x - pivot.x, dy = y - pivot.y;
+    return Math.atan2(dx, -dy) * 180 / Math.PI; // 0 = recht omhoog, 90 = opzij, 180 = omlaag
+  }
+  function release() {
+    lever.classList.remove('dragging');
+    lever.classList.add('snapping');
+    const fire = angle >= TRIGGER && canPull();
+    if (fire) { initAudio(); playLeverClack(); }
+    setAngle(0);
+    setTimeout(() => lever.classList.remove('snapping'), 500);
+    if (fire) setTimeout(spin, 120);
+  }
+  function syncState() { lever.classList.toggle('disabled', !canPull()); requestAnimationFrame(syncState); }
+  syncState();
+
+  arm.addEventListener('pointerdown', e => {
+    if (!canPull()) return;
+    e.preventDefault();
+    arm.setPointerCapture(e.pointerId);
+    const r = arm.getBoundingClientRect();
+    pivot = { x: r.left + r.width / 2, y: r.bottom };
+    dragging = true;
+    lever.classList.add('dragging');
+    lever.classList.remove('snapping');
+    initAudio();
+  });
+  arm.addEventListener('pointermove', e => {
+    if (!dragging) return;
+    const prev = angle;
+    setAngle(angleFor(e.clientX, e.clientY));
+    if (Math.floor(prev / 12) !== Math.floor(angle / 12)) playTick(0.08); // ratel tijdens het trekken
+  });
+  arm.addEventListener('pointerup', e => {
+    if (!dragging) return;
+    dragging = false;
+    if (angle < 15) {
+      // gewoon klikken: de hendel trekt zichzelf
+      lever.classList.add('snapping');
+      setAngle(MAX);
+      setTimeout(() => { angle = MAX; release(); }, 420);
+    } else release();
+  });
+  arm.addEventListener('pointercancel', () => { if (dragging) { dragging = false; release(); } });
+})();
+
+function playLeverClack() {
+  if (!audioCtx) return;
+  const t = audioCtx.currentTime;
+  // zware metalen "klak" van de hendel die terugslaat
+  const osc = audioCtx.createOscillator();
+  osc.type = 'square';
+  osc.frequency.setValueAtTime(180, t);
+  osc.frequency.exponentialRampToValueAtTime(50, t + 0.12);
+  const g = audioCtx.createGain();
+  g.gain.setValueAtTime(0.25, t);
+  g.gain.exponentialRampToValueAtTime(0.001, t + 0.16);
+  const lp = audioCtx.createBiquadFilter();
+  lp.type = 'lowpass'; lp.frequency.value = 900;
+  osc.connect(lp).connect(g).connect(audioCtx.destination);
+  osc.start(t); osc.stop(t + 0.2);
+  playTick(0.5);
+}
 
 // ===== AUDIO: tick sound via Web Audio API =====
 let audioCtx = null;
@@ -898,7 +1019,7 @@ function spin() {
           showWinnerOverlay(names[selectedIdx], () => {
             showWinner(1, names[selectedIdx]);
             document.getElementById('spinBtn').disabled = false;
-            document.getElementById('spinBtn').textContent = 'Draai voor winnaar 2';
+            document.getElementById('spinBtn').textContent = 'Trek nog eens voor winnaar 2';
           }, null, 'Winnaar 1', 'Nog 1 te gaan');
         });
       } else if (winners.length === 1) {
@@ -1171,7 +1292,7 @@ function resetWheel() {
   document.getElementById('finaleOverlay').classList.remove('active');
   document.getElementById('spinBtn').style.display = 'block';
   document.getElementById('spinBtn').disabled = false;
-  document.getElementById('spinBtn').textContent = 'Draai het rad';
+  document.getElementById('spinBtn').textContent = 'Trek aan de hendel';
   document.getElementById('resetBtn').style.display = 'none';
   document.getElementById('centerLabel').textContent = 'Spin';
   pointer.style.transform = 'translateX(-50%) rotate(0deg)';
