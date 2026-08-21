@@ -1385,7 +1385,7 @@ function showFinale(name1, name2, choirAlreadyPlayed) {
   document.getElementById('finaleName1').textContent = name1.toUpperCase();
   document.getElementById('finaleName2').textContent = name2.toUpperCase();
   finale.classList.add('active');
-  launchConfetti(14000);
+  launchConfetti(14000, finaleConfetti, 160);
 
   document.getElementById('spinBtn').style.display = 'none';
   document.getElementById('resetBtn').style.display = 'block';
@@ -1449,6 +1449,8 @@ const confettiColors = ['#FFFFFF', '#000000', '#00B800', '#FC470F', '#E80094'];
 confettiColors.forEach(c => confettiLogos.push(logoImage(c)));
 const confettiKribbels = [];
 KRIBBEL_NAMES.forEach(n => confettiColors.forEach(c => confettiKribbels.push(kribbelImage(n, c))));
+// slotscherm: enkel roze (logo's + kribbels)
+const finaleConfetti = [Object.assign(logoImage('#E80094'), { isLogo: true }), ...KRIBBEL_NAMES.map(n => kribbelImage(n, '#E80094'))];
 
 let confettiRun = 0; // teller: een nieuwe start of een reset stopt de vorige regen
 // Regen van één kribbel (bv. enkel bloemen of enkel hartjes) bij een winnaar
@@ -1469,8 +1471,11 @@ function launchConfetti(duration = 14000, onlyImages = null, count = 160) {
   const startTime = performance.now();
 
   function newPiece(fromTop) {
-    const isLogo = !onlyImages && Math.random() < 0.45;
-    const pool = onlyImages || (isLogo ? confettiLogos : confettiKribbels);
+    let isLogo = !onlyImages && Math.random() < 0.45;
+    let pool = onlyImages || (isLogo ? confettiLogos : confettiKribbels);
+    // in een gemengde eigen pool (slotscherm) krijgen logo's hun eigen kans en maat
+    if (onlyImages && onlyImages.some(i => i.isLogo) && Math.random() < 0.45) { pool = onlyImages.filter(i => i.isLogo); isLogo = true; }
+    else if (onlyImages) pool = onlyImages.filter(i => !i.isLogo);
     const img = pool[Math.floor(Math.random() * pool.length)];
     const w = isLogo ? 40 + Math.random() * 44 : 26 + Math.random() * 30;
     return {
