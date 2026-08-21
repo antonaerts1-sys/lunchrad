@@ -523,7 +523,8 @@
   .interlude-line.words .w.shaky { animation: wordIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) both, shake 0.12s 0.9s linear 12; animation-delay: calc(var(--i) * 0.22s), 0.9s; }
   @keyframes shake { 0%, 100% { transform: translate(0, 0) rotate(0); } 25% { transform: translate(-2px, 1px) rotate(-1deg); } 75% { transform: translate(2px, -1px) rotate(1deg); } }
   /* zin 3: rijst op, pijl onder het laatste woord */
-  .interlude-line.rise { overflow: hidden; padding: 0.05em 0.1em 0.35em; }
+  /* langste zin: een maat kleiner zodat hij op één regel past */
+  .interlude-line.rise { overflow: hidden; padding: 0.05em 0.1em 0.15em; font-size: clamp(40px, 6.6vw, 104px); max-width: 94vw; }
   .interlude-line.rise .inner { display: block; animation: nameRise 0.8s cubic-bezier(0.16, 1, 0.3, 1) both; }
   /* bonzende hartjes op de achtergrond, de hele tussenakte lang */
   .interlude-hearts { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
