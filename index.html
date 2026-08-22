@@ -557,6 +557,28 @@
     font-family: 'GTFlexa', sans-serif; font-size: 14px; color: #000; opacity: 0.45;
   }
 
+  /* ===== Eddy Wally: vierde beat van de tussenakte ===== */
+  .interlude-eddy {
+    position: absolute; inset: 0; overflow: hidden; z-index: 0;
+    animation: eddyUp 0.7s cubic-bezier(0.34, 1.4, 0.64, 1) both;
+  }
+  .interlude-eddy img {
+    width: 100%; height: 100%; object-fit: cover; object-position: 50% 25%; display: block;
+  }
+  @keyframes eddyUp {
+    0% { transform: translateY(100%) scale(1.15); }
+    100% { transform: translateY(0) scale(1); }
+  }
+  .interlude-line.geweldig {
+    color: #fff; z-index: 2;
+    text-shadow: 0 0 0 #000, 6px 6px 0 #000;
+    font-size: clamp(72px, 16vw, 260px);
+    animation: slamIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both, applauseClap 0.45s 0.6s ease-in-out 5;
+    transform: rotate(-4deg);
+    align-self: flex-end; margin-bottom: 7vh; /* laag in beeld, zodat zijn gezicht vrij blijft */
+  }
+  .interlude.eddy-on .interlude-hearts { z-index: 1; }
+
   /* ===== Muisspoor ===== */
   .trail-canvas {
     position: fixed; inset: 0; pointer-events: none; z-index: 300;
@@ -1265,6 +1287,28 @@ function playDrumRoll(t, dur = 1.6) {
   playDrumHit(t + dur + 0.05, 0.6);
 }
 
+// ===== AUDIO: schlager-flourish voor Eddy =====
+function playFlourish(t) {
+  // kitscherig orgeltje: snelle arpeggio omhoog en dan een akkoord met vibrato
+  const voice = (f, start, dur, vol) => {
+    const g = audioCtx.createGain();
+    g.gain.setValueAtTime(0, start);
+    g.gain.linearRampToValueAtTime(vol, start + 0.02);
+    g.gain.setValueAtTime(vol, start + dur - 0.08);
+    g.gain.linearRampToValueAtTime(0, start + dur);
+    const lp = audioCtx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 2400;
+    g.connect(lp).connect(audioCtx.destination); lp.connect(getReverb());
+    [['square', 1, 0.35], ['triangle', 2, 0.5], ['sine', 0.5, 0.4]].forEach(([type, ratio, amp]) => {
+      const o = audioCtx.createOscillator(); o.type = type; o.frequency.setValueAtTime(f * ratio, start);
+      if (dur > 0.4) { const lfo = audioCtx.createOscillator(); const lg = audioCtx.createGain(); lfo.frequency.value = 6; lg.gain.value = 10; lfo.connect(lg).connect(o.detune); lfo.start(start); lfo.stop(start + dur); }
+      const og = audioCtx.createGain(); og.gain.value = amp; o.connect(og).connect(g); o.start(start); o.stop(start + dur + 0.05);
+    });
+  };
+  [523.25, 659.25, 783.99, 1046.5].forEach((f, i) => voice(f, t + i * 0.09, 0.14, 0.12));
+  [523.25, 659.25, 783.99, 1046.5].forEach(f => voice(f, t + 0.42, 1.3, 0.09));
+  voice(261.63, t + 0.42, 1.3, 0.08);
+}
+
 // ===== TUSSENAKTE: de commentator =====
 let interludeTimers = [], interludeDone = null;
 function playInterlude(onDone) {
@@ -1285,9 +1329,10 @@ function playInterlude(onDone) {
   const clear = () => { line.className = 'interlude-line'; line.innerHTML = ''; };
   const finish = () => {
     interludeTimers.forEach(clearTimeout); interludeTimers = [];
-    box.classList.remove('active');
+    box.classList.remove('active', 'eddy-on');
     box.onclick = null;
     clear();
+    box.querySelectorAll('.interlude-eddy').forEach(e => e.remove());
     const cb = interludeDone; interludeDone = null;
     if (cb) cb();
   };
@@ -1321,7 +1366,22 @@ function playInterlude(onDone) {
     line.innerHTML = `<span class="inner">Wat een prachtige editie alweer.</span>`;
     if (audioCtx) playChoir(audioCtx.currentTime + 0.1, 2.6);   // het koor zet al in
   });
-  at(8300, finish);
+  // 4. Eddy Wally vult het scherm... GEWELDIG!
+  at(8300, () => {
+    clear();
+    const eddy = document.createElement('div');
+    eddy.className = 'interlude-eddy';
+    eddy.innerHTML = '<img src="eddy.jpg" alt="Eddy Wally">';
+    box.insertBefore(eddy, hearts);
+    box.classList.add('eddy-on');
+    if (audioCtx) playFlourish(audioCtx.currentTime + 0.05);
+  });
+  at(9000, () => {
+    clear(); line.classList.add('geweldig');
+    line.textContent = 'Geweldig!';
+    if (audioCtx) playDrumHit(audioCtx.currentTime + 0.02, 0.7);
+  });
+  at(11600, finish);
 }
 // ===== AUDIO: trompetfanfare bij de finale =====
 function playBrass(freq, t, dur, vol = 0.14) {
@@ -1615,6 +1675,7 @@ function launchConfetti(duration = 14000, onlyImages = null, count = 160, onEnd 
   }
   setTimeout(loop, 1500);
 })();
+new Image().src = 'eddy.jpg'; // Eddy vooraf laden
 
 // ===== PIJLEN NAAR DE HENDEL: vanaf winnaar 1 tot je opnieuw trekt =====
 (function arrowsToLever() {
