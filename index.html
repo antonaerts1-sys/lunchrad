@@ -1503,7 +1503,8 @@ function resetWheel() {
   confettiRun++;
   document.getElementById('finaleHearts').innerHTML = '';
   interludeTimers.forEach(clearTimeout); interludeTimers = []; interludeDone = null;
-  document.getElementById('interlude').classList.remove('active');
+  document.getElementById('interlude').classList.remove('active', 'eddy-on');
+  document.querySelectorAll('.interlude-eddy').forEach(e => e.remove());
   document.getElementById('gearBtn').disabled = false;
   winners = [];
   eliminatedIndex = -1;
