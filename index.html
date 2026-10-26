@@ -265,6 +265,27 @@
     font-size: 16px; cursor: pointer; transition: all 0.2s;
   }
   .settings-all:hover { background: #000; color: #fff; }
+  .guest-add {
+    display: flex; gap: 8px; padding: 14px 24px; border-bottom: 1px solid #000;
+  }
+  .guest-add input {
+    flex: 1; min-width: 0; font: inherit; font-size: 16px; padding: 8px 14px;
+    border: 1px solid #000; border-radius: 9999px; background: #fff; color: #000;
+  }
+  .guest-add button {
+    background: #000; color: #fff; border: 1px solid #000; border-radius: 9999px; padding: 8px 16px;
+    font-family: 'GTFlexa Condensed', 'GTFlexa', sans-serif; text-transform: uppercase;
+    font-size: 16px; cursor: pointer;
+  }
+  .guest-tag {
+    font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em;
+    border: 1px solid #000; border-radius: 9999px; padding: 1px 8px; opacity: 0.6;
+  }
+  .guest-remove {
+    margin-left: auto; background: none; border: none; font-size: 22px; line-height: 1;
+    cursor: pointer; color: #000; opacity: 0.5; padding: 0 4px;
+  }
+  .guest-remove:hover { opacity: 1; }
 
   /* Winnaar-tot-nu-toe: één rustige regel onder de hint, geen vlak */
   .winners-panel {
@@ -611,10 +632,14 @@
     </div>
     <button class="settings-close" onclick="toggleSettings(false)" aria-label="Sluiten">&times;</button>
   </div>
+  <form class="guest-add" onsubmit="addGuest(event)">
+    <input id="guestInput" type="text" maxlength="24" placeholder="Gast toevoegen" aria-label="Naam van de gast" autocomplete="off">
+    <button type="submit">Voeg toe</button>
+  </form>
   <div class="settings-list" id="settingsList"></div>
   <div class="settings-foot">
     <button class="settings-all" onclick="everyonePresent()">Iedereen aanwezig</button>
-    <span>Vink af wie er niet is. Wordt onthouden in deze browser.</span>
+    <span>Vink af wie er niet is. Wordt onthouden in deze browser. Gasten staan er enkel tot je dit tabblad sluit.</span>
   </div>
 </div>
 
@@ -726,9 +751,17 @@ let absent = new Set();
 try { absent = new Set(JSON.parse(localStorage.getItem(ABSENT_KEY) || '[]')); } catch (e) {}
 absent = new Set([...absent].filter(n => allNames.includes(n)));
 
+// ===== GASTEN: tijdelijk, enkel zolang dit tabblad open is =====
+const GUEST_KEY = 'lunchrad-gasten';
+let guests = [];
+try { guests = JSON.parse(sessionStorage.getItem(GUEST_KEY) || '[]'); } catch (e) {}
+function saveGuests() {
+  try { sessionStorage.setItem(GUEST_KEY, JSON.stringify(guests)); } catch (e) {}
+}
+
 let names = [], segAngle = 0, palette = [];
 function buildWheel() {
-  names = allNames.filter(n => !absent.has(n));
+  names = [...allNames, ...guests].filter(n => !absent.has(n));
   segAngle = (2 * Math.PI) / names.length;
   palette = names.map((_, i) => brandColors[i % 4]);
   // laatste vak mag niet dezelfde kleur hebben als het eerste (ze raken elkaar)
@@ -739,13 +772,36 @@ function buildWheel() {
   badge.textContent = absent.size;
   badge.style.display = absent.size ? 'flex' : 'none';
   document.getElementById('settingsSub').textContent =
-    absent.size ? `${names.length} op het rad, ${absent.size} afwezig` : `Iedereen aanwezig (${names.length})`;
+    (absent.size ? `${names.length} op het rad, ${absent.size} afwezig` : `Iedereen aanwezig (${names.length})`)
+    + (guests.length ? `, waarvan ${guests.length} ${guests.length === 1 ? 'gast' : 'gasten'}` : '');
 }
 buildWheel();
 
 function renderSettings() {
   const list = document.getElementById('settingsList');
   list.innerHTML = '';
+  guests.forEach(n => {
+    const row = document.createElement('div');
+    row.className = 'settings-item';
+    const name = document.createElement('span');
+    name.textContent = n;
+    const tag = document.createElement('span');
+    tag.className = 'guest-tag';
+    tag.textContent = 'gast';
+    const del = document.createElement('button');
+    del.className = 'guest-remove';
+    del.innerHTML = '&times;';
+    del.setAttribute('aria-label', `${n} verwijderen`);
+    del.addEventListener('click', () => {
+      guests = guests.filter(g => g !== n);
+      saveGuests();
+      renderSettings();
+      buildWheel();
+      resetWheel();
+    });
+    row.append(name, tag, del);
+    list.appendChild(row);
+  });
   allNames.forEach(n => {
     const lbl = document.createElement('label');
     lbl.className = 'settings-item' + (absent.has(n) ? ' absent' : '');
@@ -759,6 +815,27 @@ function renderSettings() {
     });
     list.appendChild(lbl);
   });
+}
+
+function addGuest(e) {
+  e.preventDefault();
+  const input = document.getElementById('guestInput');
+  let n = input.value.trim().replace(/\s+/g, ' ');
+  if (!n) return;
+  // zelfde naam als een collega of andere gast: maak hem uniek
+  const taken = new Set([...allNames, ...guests].map(x => x.toLowerCase()));
+  if (taken.has(n.toLowerCase())) {
+    let i = 2;
+    while (taken.has(`${n} (${i})`.toLowerCase())) i++;
+    n = `${n} (${i})`;
+  }
+  guests.push(n);
+  saveGuests();
+  input.value = '';
+  renderSettings();
+  buildWheel();
+  resetWheel();
+  input.focus();
 }
 
 function toggleSettings(open) {
