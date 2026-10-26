@@ -265,6 +265,28 @@
     font-size: 16px; cursor: pointer; transition: all 0.2s;
   }
   .settings-all:hover { background: #000; color: #fff; }
+  .settings-add { display: flex; gap: 8px; padding: 16px 24px; border-bottom: 1px solid #000; }
+  .settings-add input {
+    flex: 1; min-width: 0; padding: 10px 14px; border: 1px solid #000; border-radius: 9999px;
+    background: #fff; font: inherit; font-size: 16px;
+  }
+  .settings-add input:focus { outline: 2px solid #3391FF; outline-offset: 1px; }
+  .settings-add button {
+    background: #000; color: #fff; border: 1px solid #000; border-radius: 9999px; padding: 10px 16px;
+    font-family: 'GTFlexa Condensed', 'GTFlexa', sans-serif; text-transform: uppercase;
+    font-size: 16px; cursor: pointer; transition: all 0.2s;
+  }
+  .settings-add button:hover { background: #fff; color: #000; }
+  .settings-item > span:first-of-type { flex: 1; }
+  .settings-new {
+    font-family: 'GTFlexa Condensed', 'GTFlexa', sans-serif; text-transform: uppercase;
+    font-size: 12px; padding: 2px 8px; border-radius: 9999px; background: #00B800; color: #000;
+  }
+  .settings-remove {
+    background: none; border: none; font-size: 22px; line-height: 1; cursor: pointer; color: #000;
+    opacity: 0.5; padding: 0 4px;
+  }
+  .settings-remove:hover { opacity: 1; }
 
   /* Winnaar-tot-nu-toe: één rustige regel onder de hint, geen vlak */
   .winners-panel {
@@ -611,10 +633,14 @@
     </div>
     <button class="settings-close" onclick="toggleSettings(false)" aria-label="Sluiten">&times;</button>
   </div>
+  <form class="settings-add" id="addForm">
+    <input type="text" id="addName" placeholder="Nieuwe naam" maxlength="20" autocomplete="off" aria-label="Nieuwe naam">
+    <button type="submit">Toevoegen</button>
+  </form>
   <div class="settings-list" id="settingsList"></div>
   <div class="settings-foot">
     <button class="settings-all" onclick="everyonePresent()">Iedereen aanwezig</button>
-    <span>Vink af wie er niet is. Wordt onthouden in deze browser.</span>
+    <span>Vink af wie er niet is, voeg nieuwe mensen toe. Wordt onthouden in deze browser.</span>
   </div>
 </div>
 
@@ -698,7 +724,7 @@
 <canvas class="confetti-canvas" id="confetti"></canvas>
 
 <script>
-const allNames = [
+const baseNames = [
   "Jan H.", "Leen", "Kristof", "Bram", "Tim",
   "Annelies", "Eva V.", "Kim", "Stephanie", "Eva B.",
   "Karel-Jan", "Hannah", "Anton L.", "Eline", "Laure",
@@ -719,6 +745,16 @@ const cx = W / 2;
 const cy = H / 2;
 const radius = W / 2 - 20;
 const brandColors = ['#00B800', '#FC470F', '#3391FF', '#E80094'];
+
+// ===== NIEUWE MENSEN (tandwiel): bewaard in de browser =====
+const EXTRA_KEY = 'lunchrad-extra';
+let extraNames = [];
+try { extraNames = JSON.parse(localStorage.getItem(EXTRA_KEY) || '[]').filter(n => typeof n === 'string' && !baseNames.includes(n)); } catch (e) {}
+let allNames = [...baseNames, ...extraNames];
+function saveExtra() {
+  allNames = [...baseNames, ...extraNames];
+  try { localStorage.setItem(EXTRA_KEY, JSON.stringify(extraNames)); } catch (e) {}
+}
 
 // ===== AFWEZIGEN (tandwiel): bewaard in de browser =====
 const ABSENT_KEY = 'lunchrad-afwezig';
@@ -749,7 +785,21 @@ function renderSettings() {
   allNames.forEach(n => {
     const lbl = document.createElement('label');
     lbl.className = 'settings-item' + (absent.has(n) ? ' absent' : '');
-    lbl.innerHTML = `<input type="checkbox" ${absent.has(n) ? '' : 'checked'}><span>${n}</span>`;
+    lbl.innerHTML = `<input type="checkbox" ${absent.has(n) ? '' : 'checked'}><span></span>`;
+    lbl.querySelector('span').textContent = n;
+    if (extraNames.includes(n)) {
+      lbl.insertAdjacentHTML('beforeend', '<span class="settings-new">nieuw</span><button type="button" class="settings-remove" aria-label="Verwijderen" title="Verwijderen">&times;</button>');
+      lbl.querySelector('.settings-remove').addEventListener('click', e => {
+        e.preventDefault();
+        extraNames = extraNames.filter(x => x !== n);
+        absent.delete(n);
+        localStorage.setItem(ABSENT_KEY, JSON.stringify([...absent]));
+        saveExtra();
+        renderSettings();
+        buildWheel();
+        resetWheel();
+      });
+    }
     lbl.querySelector('input').addEventListener('change', e => {
       if (e.target.checked) absent.delete(n); else absent.add(n);
       lbl.classList.toggle('absent', !e.target.checked);
@@ -760,6 +810,29 @@ function renderSettings() {
     list.appendChild(lbl);
   });
 }
+
+document.getElementById('addForm').addEventListener('submit', e => {
+  e.preventDefault();
+  const input = document.getElementById('addName');
+  const n = input.value.trim().replace(/\s+/g, ' ');
+  if (!n) return;
+  const bestaand = allNames.find(x => x.toLowerCase() === n.toLowerCase());
+  if (bestaand) {
+    // staat er al: enkel terug aanwezig zetten
+    absent.delete(bestaand);
+    localStorage.setItem(ABSENT_KEY, JSON.stringify([...absent]));
+  } else {
+    extraNames.push(n);
+    saveExtra();
+  }
+  input.value = '';
+  renderSettings();
+  buildWheel();
+  resetWheel();
+  const list = document.getElementById('settingsList');
+  list.scrollTop = list.scrollHeight;
+  input.focus();
+});
 
 function toggleSettings(open) {
   if (spinning) return;
