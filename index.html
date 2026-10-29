@@ -750,9 +750,11 @@ const brandColors = ['#00B800', '#FC470F', '#3391FF', '#E80094'];
 const EXTRA_KEY = 'lunchrad-extra';
 let extraNames = [];
 try { extraNames = JSON.parse(localStorage.getItem(EXTRA_KEY) || '[]').filter(n => typeof n === 'string' && !baseNames.includes(n)); } catch (e) {}
-let allNames = [...baseNames, ...extraNames];
+// alfabetisch, ook voor nieuwe mensen
+const sortNames = list => list.sort((a, b) => a.localeCompare(b, 'nl', { sensitivity: 'base' }));
+let allNames = sortNames([...baseNames, ...extraNames]);
 function saveExtra() {
-  allNames = [...baseNames, ...extraNames];
+  allNames = sortNames([...baseNames, ...extraNames]);
   try { localStorage.setItem(EXTRA_KEY, JSON.stringify(extraNames)); } catch (e) {}
 }
 
